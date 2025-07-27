@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Создание тестовых данных для мониторинга
+Create test data for monitoring
 """
 
 import sys
@@ -12,9 +12,9 @@ from src.utils import save_parquet_to_s3
 from datetime import datetime, timedelta
 
 def create_test_predictions():
-    print("🎯 Создаем тестовые данные для мониторинга...")
+    print("🎯 Creating test data for monitoring...")
     
-    # Создаем тестовые предсказания за последние 7 дней
+    # Create test predictions for the last 7 days
     test_predictions = pd.DataFrame({
         'date': [(datetime.now() - timedelta(days=i)).strftime('%Y-%m-%d') for i in range(7)],
         'prediction_mean_proba': [0.52, 0.48, 0.55, 0.49, 0.53, 0.51, 0.50],
@@ -28,7 +28,7 @@ def create_test_predictions():
         'prediction_timestamp': [datetime.now().isoformat()] * 7
     })
     
-    # Сохраняем каждый день отдельно в S3
+    # Save each day separately to S3
     bucket_name = 'volatility-news-data'
     for _, row in test_predictions.iterrows():
         date_str = row['date']
@@ -36,11 +36,11 @@ def create_test_predictions():
         s3_key = f'predictions/{date_str}.parquet'
         try:
             save_parquet_to_s3(single_pred, bucket_name, s3_key)
-            print(f'✅ Сохранено: {s3_key}')
+            print(f'✅ Saved: {s3_key}')
         except Exception as e:
-            print(f'❌ Ошибка для {s3_key}: {e}')
+            print(f'❌ Error for {s3_key}: {e}')
     
-    print("🎉 Тестовые данные для мониторинга созданы!")
+    print("🎉 Test data for monitoring created!")
 
 if __name__ == "__main__":
     create_test_predictions()

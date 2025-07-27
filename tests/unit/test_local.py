@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Локальный тест MLOps пайплайна без Docker
+Local test of MLOps pipeline without Docker
 """
 
 from src.train import create_model_pipeline, prepare_features
@@ -8,22 +8,22 @@ import pandas as pd
 from sklearn.metrics import accuracy_score
 
 def test_model_training():
-    print("🚀 Тестируем обучение модели...")
+    print("🚀 Testing model training...")
     
-    # Загружаем небольшую выборку данных
+    # Load small data sample
     train_data = pd.read_parquet('data/processed/train_tall.parquet').head(1000)
     val_data = pd.read_parquet('data/processed/val_tall.parquet').head(500)
     
-    print(f"Тренировочные данные: {train_data.shape}")
-    print(f"Валидационные данные: {val_data.shape}")
+    print(f"Training data: {train_data.shape}")
+    print(f"Validation data: {val_data.shape}")
     
-    # Подготавливаем признаки
+    # Prepare features
     X_train, y_train, numeric_features = prepare_features(train_data)
     X_val, y_val, _ = prepare_features(val_data)
     
-    print(f"Подготовлены признаки: {X_train.shape}, целевая переменная: {y_train.shape}")
+    print(f"Features prepared: {X_train.shape}, target variable: {y_train.shape}")
     
-    # Создаем простую модель
+    # Create simple model
     model = create_model_pipeline(
         max_features=100,
         ngram_range=(1, 1),
@@ -35,19 +35,19 @@ def test_model_training():
         }
     )
     
-    print("✅ Модель создана, начинаем обучение...")
+    print("✅ Model created, starting training...")
     
-    # Обучаем
+    # Train
     model.fit(X_train, y_train)
-    print("✅ Модель обучена!")
+    print("✅ Model trained!")
     
-    # Простая оценка
+    # Simple evaluation
     pred = model.predict(X_val)
     acc = accuracy_score(y_val, pred)
-    print(f"📊 Accuracy на валидации: {acc:.3f}")
+    print(f"📊 Validation accuracy: {acc:.3f}")
     
     return model
 
 if __name__ == "__main__":
     model = test_model_training()
-    print("🎉 Локальный тест успешно завершен!")
+    print("🎉 Local test completed successfully!")
