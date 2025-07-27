@@ -1,0 +1,129 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    services:
+      # LocalStack for S3 testing
+      localstack:
+        image: localstack/localstack:latest
+        ports:
+          - 4566:4566
+        env:
+          SERVICES: s3
+          DEBUG: 1
+        options: >-
+          --health-cmd="curl -f http://localhost:4566/health || exit 1"
+          --health-interval=30s
+          --health-timeout=10s
+          --health-retries=3
+      
+      # PostgreSQL for monitoring tests
+      postgres:
+        image: postgres:13
+        env:
+          POSTGRES_USER: user
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: monitoring
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python 3.x
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.x'
+    
+    - name: Install pipenv
+      run: |
+        python -m pip install --upgrade pip
+        pip install pipenv
+    
+    - name: Install dependencies
+      run: |
+        pipenv install --dev --system
+    
+    - name: Wait for services
+      run: |
+        # Wait for LocalStack
+        timeout 60s bash -c 'until curl -f http://localhost:4566/health; do sleep 2; done'
+        # Wait for PostgreSQL  
+        timeout 60s bash -c 'until pg_isready -h localhost -p 5432 -U user; do sleep 2; done'
+    
+    - name: Lint with pylint
+      run: |
+        pylint src/ flows/ --disable=C0114,C0116,R0903,W0613 || true
+    
+    - name: Format check with black
+      run: |
+        black --check src/ flows/ tests/
+    
+    - name: Import sort check with isort
+      run: |
+        isort --check-only src/ flows/ tests/
+    
+    - name: Run unit tests
+      run: |
+        pytest tests/unit/ -v
+      env:
+        S3_ENDPOINT_URL: http://localhost:4566
+        AWS_ACCESS_KEY_ID: test
+        AWS_SECRET_ACCESS_KEY: test
+        AWS_DEFAULT_REGION: us-east-1
+        POSTGRES_CONNECTION_STRING: postgresql://user:password@localhost:5432/monitoring
+    
+    - name: Run integration tests
+      run: |
+        pytest tests/integration/ -v -x
+      env:
+        S3_ENDPOINT_URL: http://localhost:4566
+        AWS_ACCESS_KEY_ID: test
+        AWS_SECRET_ACCESS_KEY: test
+        AWS_DEFAULT_REGION: us-east-1
+        POSTGRES_CONNECTION_STRING: postgresql://user:password@localhost:5432/monitoring
+
+  security:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python 3.x
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.x'
+    
+    - name: Install pipenv
+      run: |
+        python -m pip install --upgrade pip
+        pip install pipenv
+    
+    - name: Install dependencies
+      run: |
+        pipenv install --dev --system
+    
+    - name: Security scan with bandit
+      run: |
+        pip install bandit
+        bandit -r src/ flows/ -f json -o bandit-report.json || true
+    
+    - name: Upload security scan results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: security-scan-results
+        path: bandit-report.json

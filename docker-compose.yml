@@ -1,0 +1,77 @@
+services:
+  # MLflow for experiment tracking and model registry
+  mlflow:
+    image: python:3.10-slim
+    ports:
+      - "5000:5000"
+    environment:
+      - MLFLOW_S3_ENDPOINT_URL=http://localstack:4566
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+    command: >
+      bash -c "pip install mlflow boto3 && 
+               mlflow server --host 0.0.0.0 --port 5000 
+               --backend-store-uri sqlite:///mlflow.db 
+               --default-artifact-root s3://mlflow-artifacts/"
+    depends_on:
+      - localstack
+
+  # Prefect for workflow orchestration
+  prefect:
+    image: prefecthq/prefect:3-latest
+    ports:
+      - "4200:4200"
+    volumes:
+      - ./flows:/opt/prefect/flows
+    command: prefect server start --host 0.0.0.0
+
+  # LocalStack for S3 emulation
+  localstack:
+    image: localstack/localstack:latest
+    ports:
+      - "4566:4566"
+    environment:
+      - SERVICES=s3
+      - DEBUG=1
+      - DOCKER_HOST=unix:///var/run/docker.sock
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+
+  # PostgreSQL for monitoring metrics storage
+  postgres:
+    image: postgres:13-alpine
+    platform: linux/amd64
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=monitoring
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # Grafana for monitoring dashboards
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - ./monitoring/dashboards:/etc/grafana/provisioning/dashboards
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - postgres
+
+  # Adminer for database management
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+
+volumes:
+  postgres_data:
+  grafana_data:

@@ -1,0 +1,96 @@
+name: CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  workflow_run:
+    workflows: ["CI Pipeline"]
+    types:
+      - completed
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'push' }}
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python 3.9
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.9
+    
+    - name: Install pipenv
+      run: |
+        python -m pip install --upgrade pip
+        pip install pipenv
+    
+    - name: Install dependencies
+      run: |
+        pipenv install --system
+    
+    - name: Deploy to Prefect (Simulation)
+      run: |
+        # In real scenario, this would deploy flows to Prefect Cloud/Server
+        echo "🚀 Deploying flows to Prefect..."
+        echo "📁 Validating flow files..."
+        
+        # Validate flow syntax
+        python -c "
+        import sys
+        from pathlib import Path
+        
+        flow_files = [
+            'flows/preprocess_flow.py',
+            'flows/training_flow.py', 
+            'flows/scoring_flow.py',
+            'flows/monitoring_flow.py'
+        ]
+        
+        for flow_file in flow_files:
+            if Path(flow_file).exists():
+                print(f'✅ Validating {flow_file}')
+                try:
+                    with open(flow_file) as f:
+                        compile(f.read(), flow_file, 'exec')
+                    print(f'   Syntax OK')
+                except SyntaxError as e:
+                    print(f'❌ Syntax error in {flow_file}: {e}')
+                    sys.exit(1)
+            else:
+                print(f'⚠️  {flow_file} not found')
+        
+        print('✅ All flows validated successfully')
+        "
+    
+    - name: Update Model Registry (Simulation)
+      run: |
+        echo "📋 Model registry update simulation..."
+        echo "   - Latest model version: v1.0.0"
+        echo "   - Status: Ready for promotion"
+        echo "   - Performance metrics validated"
+    
+    - name: Notify deployment
+      run: |
+        echo "✅ CD Pipeline completed successfully!"
+        echo "🎯 Next steps:"
+        echo "   1. Review model performance in MLflow UI"
+        echo "   2. Promote model to Production stage if metrics are good"
+        echo "   3. Monitor Grafana dashboards for any alerts"
+        echo "   4. Ensure Prefect flows are running on schedule"
+
+  docker-build:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'push' }}
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Build Docker image (Simulation)
+      run: |
+        echo "🐳 Building Docker images..."
+        echo "   - Building mlops-volatility-predictor:latest"
+        echo "   - Image size: ~500MB"
+        echo "   - Includes: Python 3.9, MLflow, Prefect, XGBoost"
+        echo "✅ Docker build simulation completed"

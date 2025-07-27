@@ -1,0 +1,200 @@
+{
+  "dashboard": {
+    "id": null,
+    "title": "Volatility Prediction Model Monitoring",
+    "tags": ["mlops", "volatility", "monitoring"],
+    "timezone": "browser",
+    "refresh": "5m",
+    "time": {
+      "from": "now-7d",
+      "to": "now"
+    },
+    "panels": [
+      {
+        "id": 1,
+        "title": "Model Performance Metrics",
+        "type": "stat",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+        "targets": [
+          {
+            "expr": "SELECT metric_value FROM volatility_metrics WHERE metric_name = 'accuracy' ORDER BY timestamp DESC LIMIT 1",
+            "format": "table",
+            "refId": "A"
+          },
+          {
+            "expr": "SELECT metric_value FROM volatility_metrics WHERE metric_name = 'f1' ORDER BY timestamp DESC LIMIT 1",
+            "format": "table", 
+            "refId": "B"
+          },
+          {
+            "expr": "SELECT metric_value FROM volatility_metrics WHERE metric_name = 'dataset_drift' ORDER BY timestamp DESC LIMIT 1",
+            "format": "table",
+            "refId": "C"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "thresholds"},
+            "thresholds": {
+              "steps": [
+                {"color": "red", "value": 0},
+                {"color": "yellow", "value": 0.5},
+                {"color": "green", "value": 0.55}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 2,
+        "title": "Data Drift Overview",
+        "type": "stat",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+        "targets": [
+          {
+            "expr": "SELECT metric_value FROM volatility_metrics WHERE metric_name = 'drift_share' ORDER BY timestamp DESC LIMIT 1",
+            "format": "table",
+            "refId": "A"
+          },
+          {
+            "expr": "SELECT metric_value FROM volatility_metrics WHERE metric_name = 'number_of_drifted_columns' ORDER BY timestamp DESC LIMIT 1",
+            "format": "table",
+            "refId": "B"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "thresholds"},
+            "thresholds": {
+              "steps": [
+                {"color": "green", "value": 0},
+                {"color": "yellow", "value": 0.3},
+                {"color": "red", "value": 0.5}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 3,
+        "title": "Model Performance Over Time",
+        "type": "timeseries",
+        "gridPos": {"h": 9, "w": 24, "x": 0, "y": 8},
+        "targets": [
+          {
+            "expr": "SELECT timestamp, metric_value FROM volatility_metrics WHERE metric_name = 'accuracy' ORDER BY timestamp",
+            "format": "time_series",
+            "refId": "Accuracy"
+          },
+          {
+            "expr": "SELECT timestamp, metric_value FROM volatility_metrics WHERE metric_name = 'f1' ORDER BY timestamp",
+            "format": "time_series",
+            "refId": "F1 Score"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "palette-classic"},
+            "custom": {
+              "axisLabel": "Score",
+              "axisPlacement": "auto",
+              "drawStyle": "line",
+              "lineInterpolation": "linear",
+              "lineWidth": 2,
+              "pointSize": 5,
+              "showPoints": "always"
+            },
+            "min": 0,
+            "max": 1
+          }
+        },
+        "options": {
+          "legend": {"displayMode": "table", "placement": "bottom"},
+          "tooltip": {"mode": "multi"}
+        }
+      },
+      {
+        "id": 4,
+        "title": "Data Drift Metrics Over Time",
+        "type": "timeseries", 
+        "gridPos": {"h": 9, "w": 24, "x": 0, "y": 17},
+        "targets": [
+          {
+            "expr": "SELECT timestamp, metric_value FROM volatility_metrics WHERE metric_name = 'drift_share' ORDER BY timestamp",
+            "format": "time_series",
+            "refId": "Drift Share"
+          },
+          {
+            "expr": "SELECT timestamp, metric_value FROM volatility_metrics WHERE metric_name = 'number_of_drifted_columns' ORDER BY timestamp", 
+            "format": "time_series",
+            "refId": "Drifted Columns"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "palette-classic"},
+            "custom": {
+              "axisLabel": "Drift Level",
+              "axisPlacement": "auto", 
+              "drawStyle": "line",
+              "lineInterpolation": "linear",
+              "lineWidth": 2,
+              "pointSize": 5,
+              "showPoints": "always"
+            }
+          }
+        }
+      },
+      {
+        "id": 5,
+        "title": "Prediction Distribution",
+        "type": "timeseries",
+        "gridPos": {"h": 9, "w": 24, "x": 0, "y": 26},
+        "targets": [
+          {
+            "expr": "SELECT timestamp, metric_value FROM volatility_metrics WHERE metric_name = 'prediction_mean_proba_quantile_0.95' ORDER BY timestamp",
+            "format": "time_series", 
+            "refId": "95th Percentile"
+          },
+          {
+            "expr": "SELECT timestamp, metric_value FROM volatility_metrics WHERE metric_name = 'prediction_mean_proba_quantile_0.05' ORDER BY timestamp",
+            "format": "time_series",
+            "refId": "5th Percentile"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "palette-classic"},
+            "custom": {
+              "axisLabel": "Probability",
+              "axisPlacement": "auto",
+              "drawStyle": "line", 
+              "lineInterpolation": "linear",
+              "lineWidth": 2,
+              "pointSize": 5,
+              "showPoints": "always"
+            },
+            "min": 0,
+            "max": 1
+          }
+        }
+      }
+    ],
+    "templating": {
+      "list": []
+    },
+    "annotations": {
+      "list": [
+        {
+          "name": "Model Alerts",
+          "datasource": "PostgreSQL",
+          "enable": true,
+          "expr": "SELECT timestamp, 'Alert' as title, CONCAT('Metric: ', metric_name, ', Value: ', metric_value) as text FROM volatility_metrics WHERE metric_value IS NOT NULL",
+          "iconColor": "red"
+        }
+      ]
+    }
+  },
+  "folderId": 0,
+  "overwrite": true
+}
