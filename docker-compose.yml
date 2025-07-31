@@ -57,11 +57,27 @@ services:
       - "3000:3000"
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_SECURITY_ADMIN_USER=admin
     volumes:
       - ./monitoring/dashboards:/etc/grafana/provisioning/dashboards
+      - ./monitoring/datasource.yml:/etc/grafana/provisioning/datasources/datasource.yml
       - grafana_data:/var/lib/grafana
     depends_on:
       - postgres
+
+  # Evidently UI for monitoring reports
+  evidently:
+    image: python:3.10-slim
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./monitoring/evidently_reports:/app/reports
+      - ./monitoring/evidently_workspace:/app/workspace
+    working_dir: /app
+    command: >
+      bash -c "pip install evidently[ui] pandas && 
+               mkdir -p reports workspace &&
+               evidently ui --host 0.0.0.0 --port 8000 --workspace workspace"
 
   # Adminer for database management
   adminer:

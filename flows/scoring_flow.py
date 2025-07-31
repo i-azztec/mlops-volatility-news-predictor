@@ -131,13 +131,13 @@ def make_predictions(daily_data: dict, model, vectorizer, model_version: str):
 
 @task
 def save_predictions(prediction_result: dict):
-    """Save predictions to S3."""
+    """Save predictions to S3 in monitoring-friendly format."""
     bucket_name = os.getenv('S3_BUCKET_NAME', 'volatility-news-data')
     date_str = prediction_result['date']
     
-    # Create DataFrame for saving
+    # Create DataFrame for saving (daily aggregated predictions)
     pred_df = pd.DataFrame([{
-        'date': prediction_result['date'],
+        'Date': prediction_result['date'],
         'prediction_mean_proba': prediction_result['prediction_mean_proba'],
         'prediction_mean_class': prediction_result['prediction_mean_class'],
         'prediction_majority_vote': prediction_result['prediction_majority_vote'],
@@ -145,11 +145,35 @@ def save_predictions(prediction_result: dict):
         'prediction_max_class': prediction_result['prediction_max_class'],
         'num_headlines': prediction_result['num_headlines'],
         'model_version': prediction_result['model_version'],
-        'true_vol_up': prediction_result.get('true_vol_up'),
+        'vol_change_binary': prediction_result.get('true_vol_up'),  # Ground truth for monitoring
         'prediction_timestamp': prediction_result['prediction_timestamp']
     }])
     
-    # Save to S3
+    # Also create detailed predictions with historical features for drift monitoring
+    if 'individual_predictions' in prediction_result:
+        detailed_data = []
+        historical_features = prediction_result.get('historical_features', {})
+        
+        for i, pred in enumerate(prediction_result['individual_predictions']):
+            row = {
+                'Date': prediction_result['date'],
+                'Headline': pred['headline'],
+                'prediction_mean_class': prediction_result['prediction_mean_class'],
+                'prediction_mean_proba': prediction_result['prediction_mean_proba'],
+                'vol_change_binary': prediction_result.get('true_vol_up'),
+                'model_version': prediction_result['model_version'],
+                # Add historical features for drift detection
+                **{k: v for k, v in historical_features.items() if k.startswith(('vol_', 'dayofweek', 'month', 'quarter'))}
+            }
+            detailed_data.append(row)
+        
+        # Save detailed data for monitoring
+        detailed_df = pd.DataFrame(detailed_data)
+        detailed_s3_key = f"predictions/detailed/{date_str}_detailed.parquet"
+        save_parquet_to_s3(detailed_df, bucket_name, detailed_s3_key)
+        print(f"💾 Detailed predictions saved: s3://{bucket_name}/{detailed_s3_key}")
+    
+    # Save aggregated predictions
     s3_key = f"predictions/{date_str}.parquet"
     save_parquet_to_s3(pred_df, bucket_name, s3_key)
     

@@ -1,0 +1,17 @@
+{
+  "id": "019861e1-75aa-7d84-b93e-c86d59ad6b27",
+  "name": "Production ML Monitoring",
+  "description": null,
+  "dashboard": {
+    "name": "Production ML Monitoring",
+    "panels": [],
+    "tabs": [],
+    "tab_id_to_panel_ids": {}
+  },
+  "team_id": null,
+  "org_id": null,
+  "date_from": null,
+  "date_to": null,
+  "created_at": "2025-07-31T22:07:02.442546",
+  "version": "1"
+}
