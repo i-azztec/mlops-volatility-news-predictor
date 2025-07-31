@@ -24,15 +24,22 @@ def load_production_model() -> Tuple[Any, Any, str]:
     model_name = os.getenv('MODEL_REGISTRY_NAME', 'volatility-classifier')
     
     try:
-        # Load model in production stage
-        model_uri = f"models:/{model_name}/Production"
-        model = mlflow.pyfunc.load_model(model_uri)
+        # Load model in production stage (fallback to staging for demo)
+        try:
+            model_uri = f"models:/{model_name}/Production"
+            model = mlflow.pyfunc.load_model(model_uri)
+            stage = "Production"
+        except:
+            print("No Production model found, trying Staging...")
+            model_uri = f"models:/{model_name}/Staging"
+            model = mlflow.pyfunc.load_model(model_uri)
+            stage = "Staging"
         
         # Get model version info
         client = mlflow.MlflowClient()
         model_version = client.get_latest_versions(
             model_name, 
-            stages=["Production"]
+            stages=[stage]
         )[0]
         
         # Load vectorizer from the same run

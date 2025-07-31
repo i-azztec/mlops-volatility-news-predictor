@@ -18,10 +18,10 @@ def transform_to_tall_format(df: pd.DataFrame) -> pd.DataFrame:
     """
     tall_data = []
     
-    # Get feature columns (all columns except Date, Label, and Top1-Top25)
+    # Get feature columns (all columns except Date, vol_up/Label, and Top1-Top25)
     headline_cols = [f'Top{i}' for i in range(1, 26)]
     feature_cols = [col for col in df.columns 
-                   if col not in ['Date', 'Label'] + headline_cols]
+                   if col not in ['Date', 'Label', 'vol_up'] + headline_cols]
     
     for idx, row in df.iterrows():
         # Get features for this date
@@ -32,15 +32,21 @@ def transform_to_tall_format(df: pd.DataFrame) -> pd.DataFrame:
             headline_col = f'Top{i}'
             if headline_col in row.index:  # Check if column exists
                 headline = row[headline_col]
-                if isinstance(headline, str) and not pd.isna(headline):
+                if isinstance(headline, str) and headline.strip() and not pd.isna(headline):  # Check for non-empty strings
                     tall_data.append({
                         'Date': row['Date'],
                         'Headline': headline,
-                        'vol_up': row['Label'],  # Using Label as target variable
+                        'vol_up': row['vol_up'] if 'vol_up' in row.index else row.get('Label', 0),  # Support both column names
                         **features
                     })
     
-    return pd.DataFrame(tall_data)
+    result_df = pd.DataFrame(tall_data)
+    
+    # Ensure the DataFrame has the expected columns even if empty
+    if len(result_df) == 0:
+        result_df = pd.DataFrame(columns=['Date', 'Headline', 'vol_up'])
+    
+    return result_df
 
 
 def calculate_volatility_metrics(data: pd.DataFrame, window: int = 20) -> pd.DataFrame:
