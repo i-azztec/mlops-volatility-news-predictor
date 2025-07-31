@@ -1,9 +1,9 @@
 {
-  "id": "019861e1-75aa-7d84-b93e-c86d59ad6b27",
-  "name": "Production ML Monitoring",
+  "id": "01986219-a495-75b6-84fd-7afa5053cb7e",
+  "name": "ML Volatility Monitoring",
   "description": null,
   "dashboard": {
-    "name": "Production ML Monitoring",
+    "name": "ML Volatility Monitoring",
     "panels": [],
     "tabs": [],
     "tab_id_to_panel_ids": {}
@@ -12,6 +12,6 @@
   "org_id": null,
   "date_from": null,
   "date_to": null,
-  "created_at": "2025-07-31T22:07:02.442546",
+  "created_at": "2025-07-31T23:08:24.469892",
   "version": "1"
 }
