@@ -38,6 +38,4 @@ mlruns/
 *.swo
 
 # Project specific
-data/processed/
 models/
-*.parquet
