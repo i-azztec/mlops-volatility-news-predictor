@@ -50,9 +50,9 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
-  # Grafana for monitoring dashboards
+  # Grafana for monitoring dashboards  
   grafana:
-    image: grafana/grafana:latest
+    image: grafana/grafana:9.5.15  # Stable version for Windows Docker compatibility
     ports:
       - "3000:3000"
     environment:

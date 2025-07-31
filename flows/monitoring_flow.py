@@ -249,8 +249,8 @@ def run_evidently_report(reference_data: pd.DataFrame, current_data: pd.DataFram
                     
                     classification_metrics = {
                         'accuracy': accuracy_score(y_true, y_pred),
-                        'f1_score': f1_score(y_true, y_pred),
-                        'roc_auc': roc_auc_score(y_true, y_proba) if len(set(y_true)) > 1 else 0.5
+                        'f1': f1_score(y_true, y_pred),
+                        'auc': roc_auc_score(y_true, y_proba) if len(set(y_true)) > 1 else 0.5
                     }
         
         # Create test suite for alerts
@@ -396,6 +396,7 @@ def check_alerts(metrics: dict):
         'drift_share': 0.4,    # Alert if >40% of features are drifting
         'accuracy': 0.52,      # Alert if accuracy drops below 52%
         'f1': 0.50,           # Alert if F1 drops below 50%
+        'auc': 0.52,          # Alert if AUC drops below 52%
     }
     
     alerts = []
@@ -422,7 +423,7 @@ def check_alerts(metrics: dict):
                         'threshold': threshold,
                         'message': f"⚠️ High drift share: {value:.2%} > {threshold:.2%}"
                     })
-            elif metric_name in ['accuracy', 'f1']:
+            elif metric_name in ['accuracy', 'f1', 'auc']:
                 # Performance metrics (lower is worse)
                 if value < threshold:
                     alerts.append({

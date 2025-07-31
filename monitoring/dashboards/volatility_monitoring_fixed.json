@@ -1,0 +1,198 @@
+{
+  "id": null,
+  "title": "MLOps Volatility Model Monitoring",
+  "tags": ["mlops", "volatility", "monitoring"],
+  "timezone": "browser", 
+  "refresh": "30s",
+  "time": {
+    "from": "now-7d",
+    "to": "now"
+  },
+  "panels": [
+    {
+      "id": 1,
+      "title": "Model Accuracy",
+      "type": "stat",
+      "gridPos": {"h": 6, "w": 6, "x": 0, "y": 0},
+      "targets": [
+        {
+          "rawSql": "SELECT timestamp as time, metric_value FROM volatility_metrics WHERE metric_name = 'accuracy' ORDER BY timestamp DESC LIMIT 1",
+          "format": "time_series",
+          "datasource": "PostgreSQL"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "min": 0,
+          "max": 1,
+          "thresholds": {
+            "steps": [
+              {"color": "red", "value": 0},
+              {"color": "yellow", "value": 0.52},
+              {"color": "green", "value": 0.7}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 2,
+      "title": "F1 Score",
+      "type": "stat", 
+      "gridPos": {"h": 6, "w": 6, "x": 6, "y": 0},
+      "targets": [
+        {
+          "rawSql": "SELECT timestamp as time, metric_value FROM volatility_metrics WHERE metric_name = 'f1' ORDER BY timestamp DESC LIMIT 1",
+          "format": "time_series",
+          "datasource": "PostgreSQL"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "min": 0,
+          "max": 1,
+          "thresholds": {
+            "steps": [
+              {"color": "red", "value": 0},
+              {"color": "yellow", "value": 0.5},
+              {"color": "green", "value": 0.7}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 3,
+      "title": "ROC AUC",
+      "type": "stat",
+      "gridPos": {"h": 6, "w": 6, "x": 12, "y": 0},
+      "targets": [
+        {
+          "rawSql": "SELECT timestamp as time, metric_value FROM volatility_metrics WHERE metric_name = 'auc' ORDER BY timestamp DESC LIMIT 1",
+          "format": "time_series",
+          "datasource": "PostgreSQL"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "min": 0,
+          "max": 1,
+          "thresholds": {
+            "steps": [
+              {"color": "red", "value": 0},
+              {"color": "yellow", "value": 0.52},
+              {"color": "green", "value": 0.6}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 4,
+      "title": "Data Drift Detection",
+      "type": "stat",
+      "gridPos": {"h": 6, "w": 6, "x": 18, "y": 0},
+      "targets": [
+        {
+          "rawSql": "SELECT timestamp as time, metric_value FROM volatility_metrics WHERE metric_name = 'data_drift_detected' ORDER BY timestamp DESC LIMIT 1",
+          "format": "time_series",
+          "datasource": "PostgreSQL"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "thresholds": {
+            "steps": [
+              {"color": "green", "value": 0},
+              {"color": "red", "value": 1}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 5,
+      "title": "Model Performance Metrics Over Time",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 6},
+      "targets": [
+        {
+          "rawSql": "SELECT timestamp as time, metric_value as value, metric_name as metric FROM volatility_metrics WHERE metric_name IN ('accuracy', 'f1', 'auc') ORDER BY timestamp",
+          "format": "time_series",
+          "datasource": "PostgreSQL"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "min": 0,
+          "max": 1
+        }
+      }
+    },
+    {
+      "id": 6,
+      "title": "Data Drift Metrics Over Time", 
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 6},
+      "targets": [
+        {
+          "rawSql": "SELECT timestamp as time, metric_value as value, metric_name as metric FROM volatility_metrics WHERE metric_name IN ('drift_share', 'data_drift_detected') ORDER BY timestamp",
+          "format": "time_series", 
+          "datasource": "PostgreSQL"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "min": 0
+        }
+      }
+    },
+    {
+      "id": 7,
+      "title": "Sample Sizes",
+      "type": "timeseries",
+      "gridPos": {"h": 6, "w": 12, "x": 0, "y": 14},
+      "targets": [
+        {
+          "rawSql": "SELECT timestamp as time, metric_value as value, metric_name as metric FROM volatility_metrics WHERE metric_name IN ('current_samples', 'reference_samples') ORDER BY timestamp",
+          "format": "time_series",
+          "datasource": "PostgreSQL"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "min": 0
+        }
+      }
+    },
+    {
+      "id": 8,
+      "title": "Prediction Probability Quantiles",
+      "type": "timeseries",
+      "gridPos": {"h": 6, "w": 12, "x": 12, "y": 14},
+      "targets": [
+        {
+          "rawSql": "SELECT timestamp as time, metric_value as value, metric_name as metric FROM volatility_metrics WHERE metric_name LIKE 'prediction_mean_proba_quantile_%' ORDER BY timestamp",
+          "format": "time_series",
+          "datasource": "PostgreSQL"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "min": 0,
+          "max": 1
+        }
+      }
+    }
+  ],
+  "schemaVersion": 30,
+  "version": 2
+}
