@@ -68,7 +68,7 @@ graph TD
         P -.-> F
         Q[MLflow UI<br/>localhost:5000] -.-> H
         S[Grafana UI<br/>localhost:3000] -.-> M
-        T[API Docs<br/>localhost:8000/docs] -.-> L
+        T[FastAPI Web Service<br/>localhost:8000/docs] -.-> L
     end
 
     %% Styling
