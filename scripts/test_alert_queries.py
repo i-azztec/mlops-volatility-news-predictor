@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """
-Тестирование SQL запросов для алертов
+Testing SQL queries for alerts
 """
 
 import psycopg2
 from datetime import datetime
 
-# Настройки подключения к PostgreSQL
+# PostgreSQL connection settings
 DB_CONFIG = {
     'host': 'localhost',
     'port': 5432,
@@ -16,18 +16,18 @@ DB_CONFIG = {
 }
 
 def test_alert_queries():
-    """Тестирует SQL запросы, используемые в алертах"""
+    """Tests SQL queries used in alerts"""
     
-    print("🔍 Тестирование SQL запросов для алертов...")
-    print(f"📅 Время: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    print("🔍 Testing SQL queries for alerts...")
+    print(f"📅 Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print("=" * 60)
     
     try:
-        # Подключение к базе данных
+        # Database connection
         conn = psycopg2.connect(**DB_CONFIG)
         cursor = conn.cursor()
         
-        # Тесты для каждого типа алерта
+        # Tests for each alert type
         alert_queries = [
             {
                 "name": "🚨 AUC Critical Alert (< 0.52)",
@@ -66,7 +66,7 @@ def test_alert_queries():
                 timestamp, value = result
                 timestamp_readable = datetime.fromtimestamp(timestamp / 1000).strftime('%Y-%m-%d %H:%M:%S')
                 
-                # Проверяем условие алерта
+                # Check alert condition
                 if alert['operator'] == "<":
                     should_alert = value < alert['threshold']
                 else:  # operator == ">"
@@ -74,21 +74,21 @@ def test_alert_queries():
                 
                 status_icon = "🚨 ALERT!" if should_alert else "✅ OK"
                 
-                print(f"📊 Значение: {value:.3f}")
-                print(f"🎯 Порог: {alert['operator']} {alert['threshold']}")
-                print(f"📅 Время: {timestamp_readable}")
-                print(f"🔔 Статус: {status_icon}")
+                print(f"📊 Value: {value:.3f}")
+                print(f"🎯 Threshold: {alert['operator']} {alert['threshold']}")
+                print(f"📅 Time: {timestamp_readable}")
+                print(f"🔔 Status: {status_icon}")
                 
                 if should_alert:
-                    print(f"💥 АЛЕРТ ДОЛЖЕН СРАБОТАТЬ!")
+                    print(f"💥 ALERT SHOULD TRIGGER!")
             else:
-                print("❌ Нет данных")
+                print("❌ No data")
         
         cursor.close()
         conn.close()
         
     except Exception as e:
-        print(f"❌ Ошибка подключения к БД: {e}")
+        print(f"❌ Database connection error: {e}")
 
 if __name__ == "__main__":
     test_alert_queries()

@@ -1,39 +1,39 @@
 #!/usr/bin/env python3
 """
-Скрипт для проверки статуса алертов в Grafana
+Script for checking alert status in Grafana
 """
 
 import requests
 import json
 from datetime import datetime
 
-# Настройки подключения к Grafana
+# Grafana connection settings
 GRAFANA_URL = "http://localhost:3000"
 USERNAME = "admin"
 PASSWORD = "admin"
 
 def check_grafana_alerts():
-    """Проверяет статус алертов в Grafana"""
+    """Checks alert status in Grafana"""
     
-    print("🔍 Проверка алертов в Grafana...")
-    print(f"📅 Время проверки: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    print("🔍 Checking alerts in Grafana...")
+    print(f"📅 Check time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print("=" * 60)
     
-    # Проверяем доступность Grafana
+    # Check Grafana availability
     try:
         health_response = requests.get(f"{GRAFANA_URL}/api/health", timeout=5)
         if health_response.status_code == 200:
-            print("✅ Grafana доступен")
+            print("✅ Grafana is available")
         else:
-            print("❌ Grafana недоступен")
+            print("❌ Grafana is unavailable")
             return
     except Exception as e:
-        print(f"❌ Ошибка подключения к Grafana: {e}")
+        print(f"❌ Error connecting to Grafana: {e}")
         return
     
-    # Получаем информацию об алертах
+    # Get alert information
     try:
-        # API для получения статуса алертов
+        # API for getting alert status
         alerts_response = requests.get(
             f"{GRAFANA_URL}/api/alertmanager/grafana/api/v2/alerts",
             auth=(USERNAME, PASSWORD),
@@ -42,7 +42,7 @@ def check_grafana_alerts():
         
         if alerts_response.status_code == 200:
             alerts = alerts_response.json()
-            print(f"📊 Найдено алертов: {len(alerts)}")
+            print(f"📊 Found alerts: {len(alerts)}")
             
             if alerts:
                 for alert in alerts:
@@ -55,14 +55,14 @@ def check_grafana_alerts():
                     
                     print(f"{status_icon} {severity_icon} {name}: {status}")
             else:
-                print("ℹ️  Активных алертов не найдено")
+                print("ℹ️  No active alerts found")
         else:
-            print(f"❌ Ошибка получения алертов: {alerts_response.status_code}")
+            print(f"❌ Error getting alerts: {alerts_response.status_code}")
             
     except Exception as e:
-        print(f"❌ Ошибка при получении алертов: {e}")
+        print(f"❌ Error getting alerts: {e}")
     
-    # Проверяем правила алертов
+    # Check alert rules
     try:
         rules_response = requests.get(
             f"{GRAFANA_URL}/api/ruler/grafana/api/v1/rules",
@@ -72,7 +72,7 @@ def check_grafana_alerts():
         
         if rules_response.status_code == 200:
             rules = rules_response.json()
-            print(f"\n📋 Правила алертов загружены: {len(rules) if rules else 0}")
+            print(f"\n📋 Alert rules loaded: {len(rules) if rules else 0}")
             
             if rules:
                 for namespace, groups in rules.items():
@@ -80,16 +80,16 @@ def check_grafana_alerts():
                     for group in groups:
                         group_name = group.get('name', 'unnamed')
                         rules_count = len(group.get('rules', []))
-                        print(f"  📂 Group: {group_name} ({rules_count} правил)")
+                        print(f"  📂 Group: {group_name} ({rules_count} rules)")
                         
                         for rule in group.get('rules', []):
                             rule_name = rule.get('alert', 'unnamed')
                             print(f"    📌 {rule_name}")
         else:
-            print(f"❌ Ошибка получения правил: {rules_response.status_code}")
+            print(f"❌ Error getting rules: {rules_response.status_code}")
             
     except Exception as e:
-        print(f"❌ Ошибка при получении правил: {e}")
+        print(f"❌ Error getting rules: {e}")
 
 if __name__ == "__main__":
     check_grafana_alerts()

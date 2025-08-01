@@ -1,25 +1,25 @@
 #!/usr/bin/env python3
 """
-Скрипт для создания алертов в Grafana через API
+Script for creating alerts in Grafana via API
 """
 
 import requests
 import json
 from datetime import datetime
 
-# Настройки подключения к Grafana
+# Grafana connection settings
 GRAFANA_URL = "http://localhost:3000"
 USERNAME = "admin"
 PASSWORD = "admin"
 
 def create_alert_rules():
-    """Создает правила алертов через Grafana API"""
+    """Creates alert rules via Grafana API"""
     
-    print("🚨 Создание алертов в Grafana...")
-    print(f"📅 Время: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    print("🚨 Creating alerts in Grafana...")
+    print(f"📅 Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print("=" * 60)
     
-    # Создаем папку для алертов
+    # Create alerts folder
     folder_data = {
         "title": "Model Monitoring",
         "type": "dash-folder"
@@ -35,23 +35,23 @@ def create_alert_rules():
         )
         
         if folder_response.status_code in [200, 409]:  # 409 if folder exists
-            print("✅ Папка 'Model Monitoring' создана/существует")
+            print("✅ Folder 'Model Monitoring' created/exists")
             if folder_response.status_code == 200:
                 folder_uid = folder_response.json()["uid"]
             else:
-                # Если папка существует, получаем её UID
+                # If folder exists, get its UID
                 folders_response = requests.get(f"{GRAFANA_URL}/api/folders", auth=(USERNAME, PASSWORD))
                 folders = folders_response.json()
                 folder_uid = next((f["uid"] for f in folders if f["title"] == "Model Monitoring"), "general")
         else:
-            print(f"❌ Ошибка создания папки: {folder_response.status_code}")
+            print(f"❌ Error creating folder: {folder_response.status_code}")
             folder_uid = "general"
             
     except Exception as e:
-        print(f"❌ Ошибка при создании папки: {e}")
+        print(f"❌ Error creating folder: {e}")
         folder_uid = "general"
     
-    # Определяем правила алертов
+    # Define alert rules
     alert_rules = [
         {
             "uid": "model_auc_alert",
@@ -105,10 +105,10 @@ def create_alert_rules():
         }
     ]
     
-    # Создаем каждое правило алерта
+    # Create each alert rule
     for rule in alert_rules:
         try:
-            # Формируем данные для создания правила
+            # Form data for rule creation
             rule_data = {
                 "rules": [rule]
             }
@@ -122,17 +122,17 @@ def create_alert_rules():
             )
             
             if response.status_code in [202, 200]:
-                print(f"✅ Алерт '{rule['title']}' создан успешно")
+                print(f"✅ Alert '{rule['title']}' created successfully")
             else:
-                print(f"❌ Ошибка создания алерта '{rule['title']}': {response.status_code}")
-                print(f"   Ответ: {response.text}")
+                print(f"❌ Error creating alert '{rule['title']}': {response.status_code}")
+                print(f"   Response: {response.text}")
                 
         except Exception as e:
-            print(f"❌ Ошибка при создании алерта '{rule['title']}': {e}")
+            print(f"❌ Error creating alert '{rule['title']}': {e}")
     
-    print("\n🔍 Проверяем созданные алерты...")
+    print("\n🔍 Checking created alerts...")
     
-    # Проверяем созданные алерты
+    # Check created alerts
     try:
         rules_response = requests.get(
             f"{GRAFANA_URL}/api/ruler/grafana/api/v1/rules",
@@ -142,19 +142,19 @@ def create_alert_rules():
         
         if rules_response.status_code == 200:
             rules = rules_response.json()
-            print(f"📋 Общее количество правил: {len(rules)}")
+            print(f"📋 Total rules count: {len(rules)}")
             
             for namespace, groups in rules.items():
                 print(f"📁 Namespace: {namespace}")
                 for group in groups:
                     group_name = group.get("name", "unnamed")
                     rules_count = len(group.get("rules", []))
-                    print(f"  📂 Group: {group_name} ({rules_count} правил)")
+                    print(f"  📂 Group: {group_name} ({rules_count} rules)")
         else:
-            print(f"❌ Ошибка получения правил: {rules_response.status_code}")
+            print(f"❌ Error getting rules: {rules_response.status_code}")
             
     except Exception as e:
-        print(f"❌ Ошибка при проверке правил: {e}")
+        print(f"❌ Error checking rules: {e}")
 
 if __name__ == "__main__":
     create_alert_rules()

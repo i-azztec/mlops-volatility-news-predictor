@@ -5,7 +5,7 @@ groups:
       folder: Model Monitoring
       interval: 1m
       rules:
-        # 1. Critical Alert: Model AUC Drop (AUC < 0.52 согласно ТЗ)
+        # 1. Critical Alert: Model AUC Drop (AUC < 0.52 according to specifications)
         - uid: model-auc-drop-critical
           title: Model AUC Drop - Critical
           condition: C

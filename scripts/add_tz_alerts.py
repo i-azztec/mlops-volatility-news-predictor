@@ -1,26 +1,26 @@
 #!/usr/bin/env python3
 """
-Скрипт для добавления алертов согласно ТЗ через Grafana API
-Добавляет новые алерты к существующим, не трогая alert1
+Script for adding alerts according to specification via Grafana API
+Adds new alerts to existing ones without touching alert1
 """
 
 import requests
 import json
 from datetime import datetime
 
-# Настройки подключения к Grafana
+# Grafana connection settings
 GRAFANA_URL = "http://localhost:3000"
 USERNAME = "admin"
 PASSWORD = "admin"
 
 def add_model_monitoring_alerts():
-    """Добавляет алерты мониторинга модели согласно ТЗ"""
+    """Adds model monitoring alerts according to specification"""
     
-    print("🚨 Добавление алертов мониторинга модели...")
-    print(f"📅 Время: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    print("🚨 Adding model monitoring alerts...")
+    print(f"📅 Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print("=" * 60)
     
-    # Сначала получаем существующие правила
+    # First get existing rules
     try:
         existing_response = requests.get(
             f"{GRAFANA_URL}/api/ruler/grafana/api/v1/rules/Model%20Monitoring",
@@ -30,13 +30,13 @@ def add_model_monitoring_alerts():
         
         if existing_response.status_code == 200:
             existing_rules = existing_response.json()
-            print(f"✅ Найдены существующие правила: {len(existing_rules)}")
+            print(f"✅ Found existing rules: {len(existing_rules)}")
             
-            # Получаем существующую группу
+            # Get existing group
             if existing_rules:
-                existing_group = existing_rules[0]  # Берем первую группу
+                existing_group = existing_rules[0]  # Take first group
                 existing_rules_list = existing_group.get("rules", [])
-                print(f"📋 Существующие алерты: {len(existing_rules_list)}")
+                print(f"📋 Existing alerts: {len(existing_rules_list)}")
             else:
                 existing_rules_list = []
                 existing_group = {
@@ -47,7 +47,7 @@ def add_model_monitoring_alerts():
                     "rules": []
                 }
         else:
-            print("ℹ️ Существующих правил не найдено, создаем новую группу")
+            print("ℹ️ No existing rules found, creating new group")
             existing_rules_list = []
             existing_group = {
                 "name": "evalutation_group1",
@@ -58,10 +58,10 @@ def add_model_monitoring_alerts():
             }
             
     except Exception as e:
-        print(f"❌ Ошибка получения существующих правил: {e}")
+        print(f"❌ Error getting existing rules: {e}")
         return
     
-    # Определяем новые алерты согласно ТЗ (используя структуру из вашего примера)
+    # Define new alerts according to specification (using structure from your example)
     new_alerts = [
         {
             "uid": "model-auc-drop-critical-tz",
@@ -169,7 +169,7 @@ def add_model_monitoring_alerts():
             "execErrState": "Alerting",
             "for": "2m",
             "annotations": {
-                "description": "🚨 Model AUC has dropped below 0.52 (critical threshold from ТЗ). Immediate attention required for model retraining.",
+                "description": "🚨 Model AUC has dropped below 0.52 (critical threshold from specification). Immediate attention required for model retraining.",
                 "summary": "Critical: Model AUC performance degradation detected"
             },
             "labels": {
@@ -372,10 +372,10 @@ def add_model_monitoring_alerts():
         }
     ]
     
-    # Объединяем существующие и новые алерты
+    # Combine existing and new alerts
     all_rules = existing_rules_list + new_alerts
     
-    # Обновляем группу с новыми алертами
+    # Update group with new alerts
     updated_group = {
         "name": existing_group["name"],
         "orgId": existing_group["orgId"],
@@ -384,7 +384,7 @@ def add_model_monitoring_alerts():
         "rules": all_rules
     }
     
-    # Отправляем обновленную группу
+    # Send updated group
     try:
         response = requests.post(
             f"{GRAFANA_URL}/api/ruler/grafana/api/v1/rules/Model%20Monitoring",
@@ -395,21 +395,21 @@ def add_model_monitoring_alerts():
         )
         
         if response.status_code in [202, 200]:
-            print(f"✅ Успешно добавлено {len(new_alerts)} новых алертов к существующим!")
-            print(f"📊 Общее количество алертов в группе: {len(all_rules)}")
+            print(f"✅ Successfully added {len(new_alerts)} new alerts to existing ones!")
+            print(f"📊 Total alerts in group: {len(all_rules)}")
             
             for alert in new_alerts:
                 print(f"  🚨 {alert['title']}")
         else:
-            print(f"❌ Ошибка добавления алертов: {response.status_code}")
-            print(f"   Ответ: {response.text}")
+            print(f"❌ Error adding alerts: {response.status_code}")
+            print(f"   Response: {response.text}")
             
     except Exception as e:
-        print(f"❌ Ошибка при добавлении алертов: {e}")
+        print(f"❌ Error adding alerts: {e}")
     
-    print("\n🔍 Проверяем обновленные алерты...")
+    print("\n🔍 Checking updated alerts...")
     
-    # Проверяем результат
+    # Check result
     try:
         check_response = requests.get(
             f"{GRAFANA_URL}/api/ruler/grafana/api/v1/rules",
@@ -419,25 +419,25 @@ def add_model_monitoring_alerts():
         
         if check_response.status_code == 200:
             rules = check_response.json()
-            print(f"📋 Общее количество групп правил: {len(rules)}")
+            print(f"📋 Total rule groups: {len(rules)}")
             
             for namespace, groups in rules.items():
                 print(f"📁 Namespace: {namespace}")
                 for group in groups:
                     group_name = group.get("name", "unnamed")
                     rules_count = len(group.get("rules", []))
-                    print(f"  📂 Group: {group_name} ({rules_count} алертов)")
+                    print(f"  📂 Group: {group_name} ({rules_count} alerts)")
                     
                     for rule in group.get("rules", []):
                         rule_title = rule.get("title", "unnamed")
                         is_paused = rule.get("isPaused", False)
-                        status = "⏸️ ПРИОСТАНОВЛЕН" if is_paused else "▶️ АКТИВЕН"
+                        status = "⏸️ PAUSED" if is_paused else "▶️ ACTIVE"
                         print(f"    🚨 {rule_title} - {status}")
         else:
-            print(f"❌ Ошибка проверки правил: {check_response.status_code}")
+            print(f"❌ Error checking rules: {check_response.status_code}")
             
     except Exception as e:
-        print(f"❌ Ошибка при проверке правил: {e}")
+        print(f"❌ Error checking rules: {e}")
 
 if __name__ == "__main__":
     add_model_monitoring_alerts()

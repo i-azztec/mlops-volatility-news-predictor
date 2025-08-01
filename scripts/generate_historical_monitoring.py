@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Скрипт для генерации исторических данных мониторинга модели волатильности.
-Эмулирует работу системы в течение нескольких недель с постепенной деградацией.
+Script for generating historical monitoring data for volatility model.
+Emulates system operation over several weeks with gradual degradation.
 """
 
 import pandas as pd
@@ -11,7 +11,7 @@ from datetime import datetime, timedelta
 import os
 import sys
 
-# Добавляем src в PYTHONPATH
+# Add src to PYTHONPATH
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'src'))
 
 # PostgreSQL connection
@@ -24,11 +24,11 @@ POSTGRES_CONFIG = {
 }
 
 def connect_to_db():
-    """Подключение к PostgreSQL"""
+    """Connect to PostgreSQL"""
     return psycopg2.connect(**POSTGRES_CONFIG)
 
 def insert_metric(cursor, timestamp, metric_name, metric_value):
-    """Вставляет одну метрику в базу данных"""
+    """Inserts one metric into database"""
     cursor.execute(
         "INSERT INTO volatility_metrics (timestamp, metric_name, metric_value) VALUES (%s, %s, %s)",
         (timestamp, metric_name, metric_value)
@@ -36,82 +36,82 @@ def insert_metric(cursor, timestamp, metric_name, metric_value):
 
 def generate_degrading_metrics(base_accuracy=0.714, base_f1=0.750, base_auc=0.555, weeks=4):
     """
-    Генерирует метрики с постепенной деградацией модели
+    Generates metrics with gradual model degradation
     
     Args:
-        base_accuracy: Начальная точность модели
-        base_f1: Начальный F1-score
-        base_auc: Начальный AUC
-        weeks: Количество недель для генерации данных
+        base_accuracy: Initial model accuracy
+        base_f1: Initial F1-score
+        base_auc: Initial AUC
+        weeks: Number of weeks to generate data for
     
     Returns:
         List of tuples (timestamp, metrics_dict)
     """
     results = []
     
-    # Начинаем с текущей даты и идем назад
+    # Start from current date and go back
     current_date = datetime.now()
     
     for week in range(weeks):
-        # Каждую неделю модель деградирует на 1-3%
+        # Each week model degrades by 1-3%
         degradation_factor = 1 - (week * 0.02 + np.random.normal(0, 0.01))
-        degradation_factor = max(0.5, degradation_factor)  # Не падаем ниже 50%
+        degradation_factor = max(0.5, degradation_factor)  # Don't fall below 50%
         
-        # Генерируем 3-4 измерения в неделю
+        # Generate 3-4 measurements per week
         measurements_per_week = np.random.randint(3, 5)
         
         for measurement in range(measurements_per_week):
-            # Время измерения (случайное в течение недели)
+            # Measurement time (random within the week)
             days_back = week * 7 + measurement * (7 / measurements_per_week)
             timestamp = current_date - timedelta(days=days_back)
             
-            # Добавляем случайный шум к метрикам
-            noise = np.random.normal(0, 0.02)  # 2% шум
+            # Add random noise to metrics
+            noise = np.random.normal(0, 0.02)  # 2% noise
             
             metrics = {
                 'accuracy': max(0.4, min(0.9, base_accuracy * degradation_factor + noise)),
                 'f1': max(0.3, min(0.9, base_f1 * degradation_factor + noise * 0.8)),
                 'auc': max(0.45, min(0.75, base_auc * degradation_factor + noise * 0.5)),
                 
-                # Data drift метрики (увеличиваются со временем)
+                # Data drift metrics (increase over time)
                 'data_drift_detected': 1 if week > 2 and np.random.random() > 0.7 else 0,
                 'drift_share': min(0.3, week * 0.05 + np.random.uniform(0, 0.05)),
                 
-                # Размеры выборок (варьируются)
+                # Sample sizes (vary)
                 'current_samples': np.random.randint(150, 300),
-                'reference_samples': 6300,  # Константа
+                'reference_samples': 6300,  # Constant
                 
-                # Квантили предсказаний
+                # Prediction quantiles
                 'prediction_mean_proba_quantile_0.05': np.random.uniform(0.1, 0.3),
                 'prediction_mean_proba_quantile_0.95': np.random.uniform(0.7, 0.9),
             }
             
             results.append((timestamp, metrics))
     
-    # Сортируем по времени (от старых к новым)
+    # Sort by time (from old to new)
     results.sort(key=lambda x: x[0])
     return results
 
 def main():
-    """Основная функция для генерации и сохранения исторических данных"""
-    print("🔄 Генерация исторических данных мониторинга...")
+    """Main function for generating and saving historical data"""
+    print("🔄 Generating historical monitoring data...")
     
-    # Генерируем данные за 6 недель
+    # Generate data for 6 weeks
     historical_data = generate_degrading_metrics(weeks=6)
     
-    print(f"📊 Сгенерировано {len(historical_data)} временных точек")
+    print(f"📊 Generated {len(historical_data)} time points")
     
-    # Подключаемся к базе данных
+    # Connect to database
     try:
         conn = connect_to_db()
         cursor = conn.cursor()
         
-        # Очищаем старые данные (опционально)
-        print("🗑️ Очистка старых данных...")
+        # Clear old data (optional)
+        print("🗑️ Clearing old data...")
         cursor.execute("DELETE FROM volatility_metrics WHERE timestamp < NOW() - INTERVAL '2 months'")
         
-        # Вставляем новые данные
-        print("💾 Вставка исторических данных...")
+        # Insert new data
+        print("💾 Inserting historical data...")
         total_inserted = 0
         
         for timestamp, metrics in historical_data:
@@ -119,11 +119,11 @@ def main():
                 insert_metric(cursor, timestamp, metric_name, metric_value)
                 total_inserted += 1
         
-        # Подтверждаем изменения
+        # Commit changes
         conn.commit()
-        print(f"✅ Вставлено {total_inserted} метрик в базу данных")
+        print(f"✅ Inserted {total_inserted} metrics into database")
         
-        # Показываем статистику
+        # Show statistics
         cursor.execute("""
             SELECT 
                 metric_name, 
@@ -137,8 +137,8 @@ def main():
             ORDER BY metric_name
         """)
         
-        print("\n📈 Статистика сгенерированных метрик:")
-        print("Метрика\t\t\t\tКоличество\tМин\tМакс\tСреднее")
+        print("\n📈 Statistics of generated metrics:")
+        print("Metric\t\t\t\tCount\tMin\tMax\tAverage")
         print("-" * 70)
         
         for row in cursor.fetchall():
@@ -146,16 +146,16 @@ def main():
             print(f"{metric_name:30s}\t{count:3d}\t{min_val:.3f}\t{max_val:.3f}\t{avg_val:.3f}")
         
     except Exception as e:
-        print(f"❌ Ошибка при работе с базой данных: {e}")
+        print(f"❌ Error working with database: {e}")
         return 1
     
     finally:
         if 'conn' in locals():
             conn.close()
     
-    print("\n🎯 Теперь можно обновить Grafana дашборд!")
-    print("   Доступ: http://localhost:3000")
-    print("   Логин: admin / admin")
+    print("\n🎯 Now you can update the Grafana dashboard!")
+    print("   Access: http://localhost:3000")
+    print("   Login: admin / admin")
     
     return 0
 
