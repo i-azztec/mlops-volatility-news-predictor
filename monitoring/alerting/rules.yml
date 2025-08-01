@@ -1,0 +1,71 @@
+groups:
+  - name: model_performance_alerts
+    interval: 5m
+    rules:
+      - alert: ModelAUCDrop
+        expr: |
+          (
+            SELECT metric_value 
+            FROM volatility_metrics 
+            WHERE metric_name = 'auc' 
+            ORDER BY timestamp DESC 
+            LIMIT 1
+          ) < 0.52
+        for: 2m
+        labels:
+          severity: critical
+          team: ml-ops
+        annotations:
+          summary: "Model AUC has dropped below critical threshold"
+          description: "Model AUC is {{ $value }}, which is below the critical threshold of 0.52. Immediate attention required."
+
+      - alert: ModelF1Drop
+        expr: |
+          (
+            SELECT metric_value 
+            FROM volatility_metrics 
+            WHERE metric_name = 'f1' 
+            ORDER BY timestamp DESC 
+            LIMIT 1
+          ) < 0.65
+        for: 5m
+        labels:
+          severity: warning
+          team: ml-ops
+        annotations:
+          summary: "Model F1-score has degraded"
+          description: "Model F1-score is {{ $value }}, which is below the warning threshold of 0.65. Model retraining may be needed."
+
+      - alert: ModelAccuracyDrop
+        expr: |
+          (
+            SELECT metric_value 
+            FROM volatility_metrics 
+            WHERE metric_name = 'accuracy' 
+            ORDER BY timestamp DESC 
+            LIMIT 1
+          ) < 0.65
+        for: 5m
+        labels:
+          severity: warning
+          team: ml-ops
+        annotations:
+          summary: "Model accuracy has degraded"
+          description: "Model accuracy is {{ $value }}, which is below the warning threshold of 0.65."
+
+      - alert: DataDriftDetected
+        expr: |
+          (
+            SELECT metric_value 
+            FROM volatility_metrics 
+            WHERE metric_name = 'drift_share' 
+            ORDER BY timestamp DESC 
+            LIMIT 1
+          ) > 0.3
+        for: 10m
+        labels:
+          severity: warning
+          team: ml-ops
+        annotations:
+          summary: "Significant data drift detected"
+          description: "Data drift share is {{ $value }}, which exceeds the threshold of 0.3. Feature distribution may have changed."

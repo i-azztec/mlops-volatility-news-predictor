@@ -86,8 +86,11 @@ make up
 ### 3. Access Services
 - **Prefect UI:** http://localhost:4200
 - **MLflow UI:** http://localhost:5000  
-- **Grafana:** http://localhost:3000
-- **PostgreSQL:** localhost:5432
+- **Grafana:** http://localhost:3000 (admin/admin)
+- **Web Service API:** http://localhost:8000/docs
+- **S3 Browser:** http://localhost:8090
+- **Evidently UI:** http://localhost:8001
+- **PostgreSQL:** localhost:5432 (via Adminer: http://localhost:8080)
 
 ### 4. Run Pipelines
 
@@ -196,17 +199,45 @@ pipenv run pytest tests/integration/
 make lint
 ```
 
-## 🚀 Stage 2: Web Service
+## 🌐 Stage 2: Web Service (✅ IMPLEMENTED)
 
-The project architecture supports easy extension to a FastAPI web service:
+The FastAPI web service provides real-time volatility predictions for individual news headlines:
 
-```python
-# webservice/main.py
-@app.post("/predict")
-async def predict_headline(request: PredictionRequest):
-    model, vectorizer, version = load_production_model()
-    result = predict_one(request.headline, model)
-    return {"prediction": result, "model_version": version}
+### Features:
+- **Single Prediction:** `/predict` - Analyze one headline
+- **Batch Prediction:** `/predict/batch` - Analyze multiple headlines with aggregation
+- **Model Management:** `/model/reload`, `/model/info` - Dynamic model reloading
+- **Health Monitoring:** `/health` - Service status and uptime
+- **Interactive Docs:** `/docs` - Swagger UI for API testing
+
+### Usage Examples:
+
+```bash
+# Start web service
+make web-service
+
+# Test single prediction
+curl -X POST "http://localhost:8000/predict" \
+  -H "Content-Type: application/json" \
+  -d '{"headline": "Fed announces interest rate hike"}'
+
+# Test batch prediction  
+curl -X POST "http://localhost:8000/predict/batch" \
+  -H "Content-Type: application/json" \
+  -d '["Market rallies on earnings", "GDP growth slows", "Tech stocks surge"]'
+```
+
+### Response Format:
+```json
+{
+  "headline": "Fed announces interest rate hike",
+  "prediction_probability": 0.7234,
+  "prediction_class": 1,
+  "confidence_level": "High", 
+  "model_version": "1",
+  "prediction_timestamp": "2025-08-01T12:00:00",
+  "processing_time_ms": 45.2
+}
 ```
 
 ## 📸 Screenshots

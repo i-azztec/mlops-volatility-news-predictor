@@ -1,0 +1,235 @@
+apiVersion: 1
+
+rules:
+  - orgId: 1
+    name: model_monitoring_alerts
+    folder: Model Monitoring
+    interval: 1m
+    rules:
+      - uid: auc_critical_alert
+        title: Model AUC Critical Alert
+        condition: C
+        data:
+          - refId: A
+            queryType: ''
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasource:
+              type: postgres
+              uid: postgres_datasource
+            model:
+              format: table
+              rawSql: "SELECT COUNT(*) as count FROM volatility_metrics WHERE auc < 0.52 AND timestamp > NOW() - INTERVAL '5 minutes'"
+          - refId: C
+            queryType: ''
+            relativeTimeRange:
+              from: 0
+              to: 0
+            datasource:
+              type: __expr__
+              uid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 0
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - A
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              hide: false
+              intervalMs: 1000
+              maxDataPoints: 43200
+              reducer: last
+              refId: C
+              type: reduce
+        noDataState: NoData
+        execErrState: Alerting
+        for: 1m
+        annotations:
+          description: Model AUC is below critical threshold of 0.52
+          summary: Critical alert - model performance degraded
+        labels:
+          severity: critical
+      
+      - uid: f1_warning_alert
+        title: Model F1 Score Warning
+        condition: C
+        data:
+          - refId: A
+            queryType: ''
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasource:
+              type: postgres
+              uid: postgres_datasource
+            model:
+              format: table
+              rawSql: "SELECT COUNT(*) as count FROM volatility_metrics WHERE f1_score < 0.65 AND timestamp > NOW() - INTERVAL '5 minutes'"
+          - refId: C
+            queryType: ''
+            relativeTimeRange:
+              from: 0
+              to: 0
+            datasource:
+              type: __expr__
+              uid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 0
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - A
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              hide: false
+              intervalMs: 1000
+              maxDataPoints: 43200
+              reducer: last
+              refId: C
+              type: reduce
+        noDataState: NoData
+        execErrState: Alerting
+        for: 2m
+        annotations:
+          description: Model F1 score is below warning threshold of 0.65
+          summary: Warning - model F1 score needs attention
+        labels:
+          severity: warning
+      
+      - uid: accuracy_warning_alert
+        title: Model Accuracy Warning  
+        condition: C
+        data:
+          - refId: A
+            queryType: ''
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasource:
+              type: postgres
+              uid: postgres_datasource
+            model:
+              format: table
+              rawSql: "SELECT COUNT(*) as count FROM volatility_metrics WHERE accuracy < 0.65 AND timestamp > NOW() - INTERVAL '5 minutes'"
+          - refId: C
+            queryType: ''
+            relativeTimeRange:
+              from: 0
+              to: 0
+            datasource:
+              type: __expr__
+              uid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 0
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - A
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              hide: false
+              intervalMs: 1000
+              maxDataPoints: 43200
+              reducer: last
+              refId: C
+              type: reduce
+        noDataState: NoData
+        execErrState: Alerting
+        for: 2m
+        annotations:
+          description: Model accuracy is below warning threshold of 0.65
+          summary: Warning - model accuracy needs attention
+        labels:
+          severity: warning
+      
+      - uid: drift_warning_alert
+        title: Data Drift Warning
+        condition: C
+        data:
+          - refId: A
+            queryType: ''
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasource:
+              type: postgres
+              uid: postgres_datasource
+            model:
+              format: table
+              rawSql: "SELECT COUNT(*) as count FROM volatility_metrics WHERE drift_share > 0.3 AND timestamp > NOW() - INTERVAL '5 minutes'"
+          - refId: C
+            queryType: ''
+            relativeTimeRange:
+              from: 0
+              to: 0
+            datasource:
+              type: __expr__
+              uid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 0
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - A
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              hide: false
+              intervalMs: 1000
+              maxDataPoints: 43200
+              reducer: last
+              refId: C
+              type: reduce
+        noDataState: NoData
+        execErrState: Alerting
+        for: 2m
+        annotations:
+          description: Data drift detected - drift share exceeds 30%
+          summary: Warning - significant data drift detected
+        labels:
+          severity: warning

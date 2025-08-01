@@ -34,8 +34,10 @@ services:
       - SERVICES=s3
       - DEBUG=1
       - DOCKER_HOST=unix:///var/run/docker.sock
+      - LOCALSTACK_WEB_UI=1  # Enable Web UI (if Pro version)
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"
+      - localstack_data:/var/lib/localstack
 
   # PostgreSQL for monitoring metrics storage
   postgres:
@@ -58,9 +60,12 @@ services:
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=admin
       - GF_SECURITY_ADMIN_USER=admin
+      - GF_UNIFIED_ALERTING_ENABLED=true
+      - GF_ALERTING_ENABLED=false  # Disable legacy alerting
     volumes:
       - ./monitoring/dashboards:/etc/grafana/provisioning/dashboards
       - ./monitoring/datasource.yml:/etc/grafana/provisioning/datasources/datasource.yml
+      - ./monitoring/alerting:/etc/grafana/provisioning/alerting
       - grafana_data:/var/lib/grafana
     depends_on:
       - postgres
@@ -69,7 +74,7 @@ services:
   evidently:
     image: python:3.10-slim
     ports:
-      - "8000:8000"
+      - "8001:8001"
     volumes:
       - ./monitoring/evidently_reports:/app/reports
       - ./monitoring/evidently_workspace:/app/workspace
@@ -77,7 +82,7 @@ services:
     command: >
       bash -c "pip install evidently[ui] pandas && 
                mkdir -p reports workspace &&
-               evidently ui --host 0.0.0.0 --port 8000 --workspace /app/workspace"
+               evidently ui --host 0.0.0.0 --port 8001 --workspace /app/workspace"
 
   # Adminer for database management
   adminer:
@@ -88,6 +93,26 @@ services:
     depends_on:
       - postgres
 
+  # Web Service for Stage 2 (FastAPI) - temporarily disabled
+  # webservice:
+  #   build:
+  #     context: .
+  #     dockerfile: webservice/Dockerfile
+  #   ports:
+  #     - "8000:8000"
+  #   environment:
+  #     - MLFLOW_TRACKING_URI=http://mlflow:5000
+  #     - AWS_ACCESS_KEY_ID=test
+  #     - AWS_SECRET_ACCESS_KEY=test
+  #     - S3_ENDPOINT_URL=http://localstack:4566
+  #   volumes:
+  #     - ./.env:/app/.env
+  #   depends_on:
+  #     - mlflow
+  #     - localstack
+  #   restart: unless-stopped
+
 volumes:
   postgres_data:
   grafana_data:
+  localstack_data:

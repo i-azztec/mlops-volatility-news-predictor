@@ -1,0 +1,102 @@
+apiVersion: 1
+groups:
+    - orgId: 1
+      name: evalutation_group1
+      folder: Model Monitoring
+      interval: 1m
+      rules:
+        - uid: a1c19505-6b55-4338-a3e2-0615bc3f8ca1
+          title: alert1
+          condition: C
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: postgres_datasource
+              model:
+                editorMode: builder
+                format: table
+                hide: false
+                intervalMs: 1000
+                maxDataPoints: 43200
+                rawSql: 'SELECT AVG(metric_value) FROM volatility_metrics LIMIT 50 '
+                refId: A
+                sql:
+                    columns:
+                        - name: AVG
+                          parameters:
+                            - name: metric_value
+                              type: functionParameter
+                          type: function
+                    groupBy:
+                        - property:
+                            type: string
+                          type: groupBy
+                    limit: 50
+                table: volatility_metrics
+            - refId: B
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: __expr__
+              model:
+                conditions:
+                    - evaluator:
+                        params: []
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params:
+                            - B
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                datasource:
+                    type: __expr__
+                    uid: __expr__
+                expression: A
+                hide: false
+                intervalMs: 1000
+                maxDataPoints: 43200
+                reducer: last
+                refId: B
+                type: reduce
+            - refId: C
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: __expr__
+              model:
+                conditions:
+                    - evaluator:
+                        params:
+                            - 0
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params:
+                            - C
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                datasource:
+                    type: __expr__
+                    uid: __expr__
+                expression: B
+                hide: false
+                intervalMs: 1000
+                maxDataPoints: 43200
+                refId: C
+                type: threshold
+          noDataState: NoData
+          execErrState: Error
+          for: 5m
+          annotations:
+            description: description1
+            summary: summary1
+          isPaused: false

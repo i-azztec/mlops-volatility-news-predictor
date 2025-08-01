@@ -46,6 +46,33 @@ logs:
 restart:
 	docker compose restart
 
+# Web Service
+web-service:
+	cd webservice && python main.py
+
+web-service-dev:
+	cd webservice && uvicorn main:app --reload --host 0.0.0.0 --port 8000
+
+web-service-build:
+	docker build -f webservice/Dockerfile -t volatility-webservice .
+
+web-service-run:
+	docker run -p 8000:8000 --env-file .env volatility-webservice
+
+web-service-test:
+	pipenv run pytest tests/integration/test_webservice.py -v
+
+# UI endpoints
+ui-links:
+	@echo "🌐 Available UIs:"
+	@echo "  MLflow:        http://localhost:5000"
+	@echo "  Prefect:       http://localhost:4200"  
+	@echo "  Grafana:       http://localhost:3000 (admin/admin)"
+	@echo "  S3 Browser:    http://localhost:8090"
+	@echo "  Web Service:   http://localhost:8000/docs"
+	@echo "  Evidently:     http://localhost:8001"
+	@echo "  Adminer:       http://localhost:8080"
+
 # MLflow and Prefect
 mlflow-ui:
 	@echo "MLflow UI: http://localhost:5000"

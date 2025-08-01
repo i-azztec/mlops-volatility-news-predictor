@@ -1,0 +1,181 @@
+apiVersion: 1
+
+groups:
+  - name: model_performance_alerts
+    orgId: 1
+    folder: Model Monitoring
+    interval: 5m
+    rules:
+      - uid: model_auc_drop_alert
+        title: Model AUC Drop Alert
+        condition: C
+        data:
+          - refId: A
+            queryType: ""
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasource:
+              type: postgres
+              uid: postgres_datasource
+            model:
+              format: time_series
+              rawSql: |
+                SELECT 
+                  EXTRACT(EPOCH FROM timestamp) * 1000 as time,
+                  metric_value as value
+                FROM volatility_metrics 
+                WHERE metric_name = 'auc'
+                  AND timestamp > NOW() - INTERVAL '5 minutes'
+                ORDER BY timestamp DESC
+                LIMIT 1
+          - refId: B
+            queryType: ""
+            relativeTimeRange:
+              from: 0
+              to: 0
+            datasource:
+              type: __expr__
+              uid: __expr__
+            model:
+              expression: A
+              reducer: last
+              settings:
+                mode: ""
+              type: reduce
+          - refId: C
+            queryType: ""
+            relativeTimeRange:
+              from: 0
+              to: 0
+            datasource:
+              type: __expr__
+              uid: __expr__
+            model:
+              expression: B < 0.52
+              type: math
+        noDataState: NoData
+        execErrState: Alerting
+        for: 2m
+        annotations:
+          description: "Model AUC has dropped to {{ $values.B.Value }} which is below the critical threshold of 0.52. Immediate attention required for model retraining."
+          summary: "Critical: Model AUC performance degradation detected"
+        labels:
+          severity: critical
+          team: ml-ops
+
+      - uid: model_f1_drop_alert
+        title: Model F1-Score Drop Alert
+        condition: C
+        data:
+          - refId: A
+            queryType: ""
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasource:
+              type: postgres
+              uid: postgres_datasource
+            model:
+              format: time_series
+              rawSql: |
+                SELECT 
+                  EXTRACT(EPOCH FROM timestamp) * 1000 as time,
+                  metric_value as value
+                FROM volatility_metrics 
+                WHERE metric_name = 'f1'
+                  AND timestamp > NOW() - INTERVAL '5 minutes'
+                ORDER BY timestamp DESC
+                LIMIT 1
+          - refId: B
+            queryType: ""
+            relativeTimeRange:
+              from: 0
+              to: 0
+            datasource:
+              type: __expr__
+              uid: __expr__
+            model:
+              expression: A
+              reducer: last
+              settings:
+                mode: ""
+              type: reduce
+          - refId: C
+            queryType: ""
+            relativeTimeRange:
+              from: 0
+              to: 0
+            datasource:
+              type: __expr__
+              uid: __expr__
+            model:
+              expression: B < 0.65
+              type: math
+        noDataState: NoData
+        execErrState: Alerting
+        for: 5m
+        annotations:
+          description: "Model F1-score has dropped to {{ $values.B.Value }} which is below the warning threshold of 0.65. Consider model retraining."
+          summary: "Warning: Model F1-score degradation detected"
+        labels:
+          severity: warning
+          team: ml-ops
+
+      - uid: data_drift_alert
+        title: Data Drift Alert
+        condition: C
+        data:
+          - refId: A
+            queryType: ""
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasource:
+              type: postgres
+              uid: postgres_datasource
+            model:
+              format: time_series
+              rawSql: |
+                SELECT 
+                  EXTRACT(EPOCH FROM timestamp) * 1000 as time,
+                  metric_value as value
+                FROM volatility_metrics 
+                WHERE metric_name = 'drift_share'
+                  AND timestamp > NOW() - INTERVAL '10 minutes'
+                ORDER BY timestamp DESC
+                LIMIT 1
+          - refId: B
+            queryType: ""
+            relativeTimeRange:
+              from: 0
+              to: 0
+            datasource:
+              type: __expr__
+              uid: __expr__
+            model:
+              expression: A
+              reducer: last
+              settings:
+                mode: ""
+              type: reduce
+          - refId: C
+            queryType: ""
+            relativeTimeRange:
+              from: 0
+              to: 0
+            datasource:
+              type: __expr__
+              uid: __expr__
+            model:
+              expression: B > 0.3
+              type: math
+        noDataState: NoData
+        execErrState: Alerting
+        for: 10m
+        annotations:
+          description: "Data drift detected with {{ $values.B.Value }} share of features drifting, exceeding threshold of 0.3. Feature distribution may have changed significantly."
+          summary: "Warning: Significant data drift detected"
+        labels:
+          severity: warning
+          team: ml-ops

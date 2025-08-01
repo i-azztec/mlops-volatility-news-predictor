@@ -1,0 +1,246 @@
+apiVersion: 1
+groups:
+    - orgId: 1
+      name: model_performance_monitoring
+      folder: Model Monitoring
+      interval: 1m
+      rules:
+        # 1. Critical Alert: Model AUC Drop (AUC < 0.52 согласно ТЗ)
+        - uid: model-auc-drop-critical
+          title: Model AUC Drop - Critical
+          condition: C
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 300
+                to: 0
+              datasourceUid: postgres_datasource
+              model:
+                editorMode: code
+                format: time_series
+                hide: false
+                intervalMs: 1000
+                maxDataPoints: 43200
+                rawSql: "SELECT EXTRACT(EPOCH FROM timestamp) * 1000 as time, metric_value as value FROM volatility_metrics WHERE metric_name = 'auc' ORDER BY timestamp DESC LIMIT 1"
+                refId: A
+            - refId: B
+              relativeTimeRange:
+                from: 0
+                to: 0
+              datasourceUid: __expr__
+              model:
+                datasource:
+                    type: __expr__
+                    uid: __expr__
+                expression: A
+                hide: false
+                intervalMs: 1000
+                maxDataPoints: 43200
+                reducer: last
+                refId: B
+                type: reduce
+            - refId: C
+              relativeTimeRange:
+                from: 0
+                to: 0
+              datasourceUid: __expr__
+              model:
+                datasource:
+                    type: __expr__
+                    uid: __expr__
+                expression: B < 0.52
+                hide: false
+                intervalMs: 1000
+                maxDataPoints: 43200
+                refId: C
+                type: math
+          noDataState: NoData
+          execErrState: Alerting
+          for: 2m
+          annotations:
+            description: "Model AUC has dropped to {{ $values.B.Value | printf \"%.3f\" }}, which is below the critical threshold of 0.52. Immediate attention required for model retraining."
+            summary: "🚨 Critical: Model AUC performance degradation detected"
+          labels:
+            severity: critical
+            team: ml-ops
+          isPaused: false
+
+        # 2. Warning Alert: Model F1-Score Drop (F1 < 0.65)
+        - uid: model-f1-drop-warning
+          title: Model F1-Score Drop - Warning
+          condition: C
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 300
+                to: 0
+              datasourceUid: postgres_datasource
+              model:
+                editorMode: code
+                format: time_series
+                hide: false
+                intervalMs: 1000
+                maxDataPoints: 43200
+                rawSql: "SELECT EXTRACT(EPOCH FROM timestamp) * 1000 as time, metric_value as value FROM volatility_metrics WHERE metric_name = 'f1' ORDER BY timestamp DESC LIMIT 1"
+                refId: A
+            - refId: B
+              relativeTimeRange:
+                from: 0
+                to: 0
+              datasourceUid: __expr__
+              model:
+                datasource:
+                    type: __expr__
+                    uid: __expr__
+                expression: A
+                hide: false
+                intervalMs: 1000
+                maxDataPoints: 43200
+                reducer: last
+                refId: B
+                type: reduce
+            - refId: C
+              relativeTimeRange:
+                from: 0
+                to: 0
+              datasourceUid: __expr__
+              model:
+                datasource:
+                    type: __expr__
+                    uid: __expr__
+                expression: B < 0.65
+                hide: false
+                intervalMs: 1000
+                maxDataPoints: 43200
+                refId: C
+                type: math
+          noDataState: NoData
+          execErrState: Alerting
+          for: 5m
+          annotations:
+            description: "Model F1-score has dropped to {{ $values.B.Value | printf \"%.3f\" }}, which is below the warning threshold of 0.65. Consider model retraining."
+            summary: "⚠️ Warning: Model F1-score degradation detected"
+          labels:
+            severity: warning
+            team: ml-ops
+          isPaused: false
+
+        # 3. Warning Alert: Model Accuracy Drop (Accuracy < 0.65)
+        - uid: model-accuracy-drop-warning
+          title: Model Accuracy Drop - Warning
+          condition: C
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 300
+                to: 0
+              datasourceUid: postgres_datasource
+              model:
+                editorMode: code
+                format: time_series
+                hide: false
+                intervalMs: 1000
+                maxDataPoints: 43200
+                rawSql: "SELECT EXTRACT(EPOCH FROM timestamp) * 1000 as time, metric_value as value FROM volatility_metrics WHERE metric_name = 'accuracy' ORDER BY timestamp DESC LIMIT 1"
+                refId: A
+            - refId: B
+              relativeTimeRange:
+                from: 0
+                to: 0
+              datasourceUid: __expr__
+              model:
+                datasource:
+                    type: __expr__
+                    uid: __expr__
+                expression: A
+                hide: false
+                intervalMs: 1000
+                maxDataPoints: 43200
+                reducer: last
+                refId: B
+                type: reduce
+            - refId: C
+              relativeTimeRange:
+                from: 0
+                to: 0
+              datasourceUid: __expr__
+              model:
+                datasource:
+                    type: __expr__
+                    uid: __expr__
+                expression: B < 0.65
+                hide: false
+                intervalMs: 1000
+                maxDataPoints: 43200
+                refId: C
+                type: math
+          noDataState: NoData
+          execErrState: Alerting
+          for: 5m
+          annotations:
+            description: "Model accuracy has dropped to {{ $values.B.Value | printf \"%.3f\" }}, which is below the warning threshold of 0.65."
+            summary: "⚠️ Warning: Model accuracy degradation detected"
+          labels:
+            severity: warning
+            team: ml-ops
+          isPaused: false
+
+        # 4. Warning Alert: Data Drift Detection (drift_share > 0.3)
+        - uid: data-drift-detection-warning
+          title: Data Drift Detection - Warning
+          condition: C
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: postgres_datasource
+              model:
+                editorMode: code
+                format: time_series
+                hide: false
+                intervalMs: 1000
+                maxDataPoints: 43200
+                rawSql: "SELECT EXTRACT(EPOCH FROM timestamp) * 1000 as time, metric_value as value FROM volatility_metrics WHERE metric_name = 'drift_share' ORDER BY timestamp DESC LIMIT 1"
+                refId: A
+            - refId: B
+              relativeTimeRange:
+                from: 0
+                to: 0
+              datasourceUid: __expr__
+              model:
+                datasource:
+                    type: __expr__
+                    uid: __expr__
+                expression: A
+                hide: false
+                intervalMs: 1000
+                maxDataPoints: 43200
+                reducer: last
+                refId: B
+                type: reduce
+            - refId: C
+              relativeTimeRange:
+                from: 0
+                to: 0
+              datasourceUid: __expr__
+              model:
+                datasource:
+                    type: __expr__
+                    uid: __expr__
+                expression: B > 0.3
+                hide: false
+                intervalMs: 1000
+                maxDataPoints: 43200
+                refId: C
+                type: math
+          noDataState: NoData
+          execErrState: Alerting
+          for: 10m
+          annotations:
+            description: "Data drift detected with {{ $values.B.Value | printf \"%.3f\" }} share of features drifting, exceeding threshold of 0.3. Feature distribution may have changed significantly."
+            summary: "⚠️ Warning: Significant data drift detected"
+          labels:
+            severity: warning
+            team: ml-ops
+          isPaused: false

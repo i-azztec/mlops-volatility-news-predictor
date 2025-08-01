@@ -1,0 +1,209 @@
+{
+  "id": null,
+  "title": "MLOps Model Monitoring with Alerts",
+  "tags": ["mlops", "monitoring", "alerts"],
+  "timezone": "browser",
+  "panels": [
+    {
+      "id": 1,
+      "title": "Model AUC Score",
+      "type": "stat",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "postgres_datasource"
+          },
+          "format": "time_series",
+          "rawSql": "SELECT timestamp as time, metric_value FROM volatility_metrics WHERE metric_name = 'auc' ORDER BY timestamp DESC LIMIT 1",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "steps": [
+              {"color": "red", "value": 0},
+              {"color": "yellow", "value": 0.52},
+              {"color": "green", "value": 0.6}
+            ]
+          },
+          "min": 0,
+          "max": 1
+        }
+      },
+      "gridPos": {"h": 8, "w": 8, "x": 0, "y": 0},
+      "alert": {
+        "conditions": [
+          {
+            "evaluator": {
+              "params": [0.52],
+              "type": "lt"
+            },
+            "operator": {
+              "type": "and"
+            },
+            "query": {
+              "params": ["A", "5m", "now"]
+            },
+            "reducer": {
+              "params": [],
+              "type": "last"
+            },
+            "type": "query"
+          }
+        ],
+        "executionErrorState": "alerting",
+        "for": "2m",
+        "frequency": "10s",
+        "handler": 1,
+        "name": "Model AUC Drop Alert",
+        "noDataState": "no_data",
+        "notifications": []
+      }
+    },
+    {
+      "id": 2,
+      "title": "Model F1 Score",
+      "type": "stat",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "postgres_datasource"
+          },
+          "format": "time_series",
+          "rawSql": "SELECT timestamp as time, metric_value FROM volatility_metrics WHERE metric_name = 'f1' ORDER BY timestamp DESC LIMIT 1",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "steps": [
+              {"color": "red", "value": 0},
+              {"color": "yellow", "value": 0.65},
+              {"color": "green", "value": 0.75}
+            ]
+          },
+          "min": 0,
+          "max": 1
+        }
+      },
+      "gridPos": {"h": 8, "w": 8, "x": 8, "y": 0}
+    },
+    {
+      "id": 3,
+      "title": "Model Accuracy",
+      "type": "stat",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "postgres_datasource"
+          },
+          "format": "time_series",
+          "rawSql": "SELECT timestamp as time, metric_value FROM volatility_metrics WHERE metric_name = 'accuracy' ORDER BY timestamp DESC LIMIT 1",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "steps": [
+              {"color": "red", "value": 0},
+              {"color": "yellow", "value": 0.65},
+              {"color": "green", "value": 0.75}
+            ]
+          },
+          "min": 0,
+          "max": 1
+        }
+      },
+      "gridPos": {"h": 8, "w": 8, "x": 16, "y": 0}
+    },
+    {
+      "id": 4,
+      "title": "Data Drift Share",
+      "type": "stat",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "postgres_datasource"
+          },
+          "format": "time_series",
+          "rawSql": "SELECT timestamp as time, metric_value FROM volatility_metrics WHERE metric_name = 'drift_share' ORDER BY timestamp DESC LIMIT 1",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "steps": [
+              {"color": "green", "value": 0},
+              {"color": "yellow", "value": 0.2},
+              {"color": "red", "value": 0.3}
+            ]
+          },
+          "min": 0,
+          "max": 1
+        }
+      },
+      "gridPos": {"h": 8, "w": 8, "x": 0, "y": 8}
+    },
+    {
+      "id": 5,
+      "title": "Model Performance Trends",
+      "type": "timeseries",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "postgres_datasource"
+          },
+          "format": "time_series",
+          "rawSql": "SELECT timestamp as time, metric_value as \"AUC\" FROM volatility_metrics WHERE metric_name = 'auc' ORDER BY timestamp",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "postgres_datasource"
+          },
+          "format": "time_series",
+          "rawSql": "SELECT timestamp as time, metric_value as \"F1\" FROM volatility_metrics WHERE metric_name = 'f1' ORDER BY timestamp",
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "postgres_datasource"
+          },
+          "format": "time_series",
+          "rawSql": "SELECT timestamp as time, metric_value as \"Accuracy\" FROM volatility_metrics WHERE metric_name = 'accuracy' ORDER BY timestamp",
+          "refId": "C"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "steps": [
+              {"color": "red", "value": 0.5},
+              {"color": "yellow", "value": 0.6},
+              {"color": "green", "value": 0.7}
+            ]
+          }
+        }
+      },
+      "gridPos": {"h": 10, "w": 16, "x": 8, "y": 8}
+    }
+  ],
+  "time": {
+    "from": "now-7d",
+    "to": "now"
+  },
+  "refresh": "30s",
+  "version": 0,
+  "uid": "mlops-monitoring-with-alerts"
+}
