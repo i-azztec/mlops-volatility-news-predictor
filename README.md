@@ -4,7 +4,7 @@
 
 This project implements a complete MLOps infrastructure for volatility prediction in financial markets, featuring automated workflows, comprehensive monitoring, and dual prediction modes for batch and real-time scenarios.
 
-## Project Overview
+## 🎯 Project Overview
 
 **Problem Statement:** Predict DJIA stock market volatility direction (increase/decrease) using financial news headlines to assist traders and financial analysts in risk assessment and decision making.
 
@@ -17,7 +17,7 @@ This project implements a complete MLOps infrastructure for volatility predictio
 
 **Focus:** Production-ready MLOps practices, scalability, monitoring, and maintainability.
 
-## Architecture
+## 🏗️ Architecture
 
 ```mermaid
 graph TD
@@ -90,14 +90,14 @@ graph TD
 | **Grafana** | http://localhost:3000 | Monitoring dashboards & alerts |
 | **Evidently UI** | http://localhost:8001 | ML monitoring reports |
 | **PostgreSQL + Adminer** | http://localhost:8080 | Metrics storage & management |
-| **AWS S3** | http://localhost:4566 | Data storage & versioning |
+| **S3 (LocalStack)** | http://localhost:4566 | Data storage & versioning |
 
-## Technology Stack
+## 🛠️ Technology Stack
 
 ### Core MLOps Infrastructure:
 - **Orchestration:** Prefect 3.x (workflow automation)
 - **ML Tracking:** MLflow 2.x (experiments, model registry, artifacts)
-- **Cloud Storage:** AWS S3 (data storage) + MinIO (MLflow backend)
+- **Cloud Storage:** AWS S3 (data storage) 
 - **Monitoring:** Evidently AI (drift detection) + PostgreSQL (metrics) + Grafana (dashboards)
 - **API Service:** FastAPI (real-time predictions) + Streamlit (dashboard)
 
@@ -119,7 +119,7 @@ graph TD
 - **Load Balancing:** Stateless design for horizontal scaling
 - **Monitoring:** Production-grade alerting system
 
-## Data & Model Performance
+## 📊 Data & Model Performance
 
 ### Dataset Details:
 - **Source:** [Daily News for Stock Market Prediction](https://www.kaggle.com/datasets/aaron7sun/stocknews) 
@@ -171,7 +171,7 @@ Combined Features → XGBoost Classifier → Hyperopt Optimization → MLflow Tr
 - Batch prediction endpoint for multiple headlines with aggregation
 - Health monitoring and service status endpoints
 
-## Quick Start
+## 🚀 Quick Start
 
 ### Prerequisites:
 - Docker Desktop (latest version) + Docker Compose
@@ -213,7 +213,7 @@ make flows
 | **Grafana** | http://localhost:3000 | admin/admin | Monitoring dashboards & alerts |
 | **Evidently** | http://localhost:8001 | - | ML monitoring reports |  
 | **Database** | http://localhost:8080 | user/password | PostgreSQL via Adminer |
-| **AWS S3 (LocalStack)** | http://localhost:4566 | - | AWS S3 emulation via LocalStack |
+| **S3 (LocalStack)** | http://localhost:4566 | - | AWS S3 emulation via LocalStack |
 
 ### Test the System:
 
@@ -233,7 +233,7 @@ open http://localhost:3000/d/volatility-monitoring/volatility-model-monitoring
 make test
 ```
 
-## Project Structure
+## 📁 Project Structure
 
 ```
 mlops-volatility-news-predictor/
@@ -292,7 +292,7 @@ mlops-volatility-news-predictor/
 - **Documentation:** Detailed docstrings, README guides, and inline comments
 - **Configuration Management:** Environment variables, Docker configs, and modular settings
 
-## Complete MLOps Workflow
+## 🔄 Complete MLOps Workflow
 
 ### Data Pipeline:
 1. **Raw Data Processing:** Historical DJIA prices + news headlines (2008-2016)
@@ -324,7 +324,7 @@ mlops-volatility-news-predictor/
 3. **Rollback Capability:** Version control allows quick model rollback
 4. **Scalability:** Docker-based services ready for horizontal scaling
 
-## Monitoring & Production Maintenance
+## 📈 Monitoring & Production Maintenance
 
 ### Comprehensive Monitoring Stack:
 
@@ -386,9 +386,9 @@ Warning Alerts:
 - **User Adoption:** API usage patterns and client feedback
 - **Operational Cost:** Infrastructure costs per prediction
 
-## Testing & Quality Assurance
+## 🧪 Testing & Quality Assurance
 
-### Comprehensive Test Suite (12+ Tests):
+### Comprehensive Test Suite:
 
 ```bash
 # Run all tests with coverage
@@ -434,7 +434,7 @@ pre-commit install         # Runs on every git commit:
 - **Static Analysis:** Pylint score >8.0/10
 - **Documentation:** Comprehensive docstrings for all public functions
 
-## Advanced Features & Future Extensions
+## 🛠️ Advanced Features & Future Extensions
 
 ### Current Advanced Implementations:
 
@@ -487,7 +487,52 @@ pre-commit install         # Runs on every git commit:
 - **Historical Analysis:** Backtesting tools for strategy evaluation
 - **Integration APIs:** Easy integration with trading platforms and tools
 
-## Contributing & Community
+
+
+## 📸 Screenshots & Visual Documentation
+
+### Docker Infrastructure
+![Docker Services](docs/images/docker1.png=250x)
+*All containerized services running in Docker Desktop*
+
+### MLflow Experiment Tracking & Hyperopt
+![MLflow Experiments](docs/images/mlflow1.png=250x) 
+![MLflow Models](docs/images/mlflow2.png=250x)
+![MLflow Models](docs/images/mlflow3.png=250x)
+![MLflow Models](docs/images/mlflow4.png=250x)
+*Hyperparameter optimization trials and model registry*
+
+### Prefect Workflow Orchestration  
+![Prefect Flows](docs/images/prefect1.png=250x) 
+*Flow execution history and task dependencies*
+
+### Adminer Database UI with PostgreSQL
+![Adminer Interface](docs/images/adminer1.png=250x) 
+![PostgreSQL Metrics](docs/images/adminer2.png=250x)
+*Database management and metrics storage*
+
+### Evidently ML Monitoring Reports
+![Evidently Dashboard](docs/images/evidently1.png=250x) 
+![Data Drift Report](docs/images/evidently2.png=250x)
+![Data Drift Report](docs/images/evidently3.png=250x)
+![Data Drift Report](docs/images/evidently4.png=250x)
+*Model performance monitoring and data drift detection*
+
+### Streamlit Web Service Visualization
+![Streamlit Dashboard](docs/images/streamlit1.png=250x) 
+![Prediction Interface](docs/images/streamlit2.png=250x)
+![Streamlit Dashboard](docs/images/streamlit3.png=250x) 
+![Streamlit Dashboard](docs/images/streamlit4.png=250x) 
+*Web service visualization and prediction interface*
+
+### Grafana Monitoring & Alerts
+![Grafana Dashboard](docs/images/grafana1.png=250x) 
+![Grafana Alerts](docs/images/grafana2.png=250x)
+*Performance metrics dashboards and automated alerting*
+
+
+
+## 🤝 Contributing & Community
 
 ### How to Contribute:
 
@@ -521,7 +566,7 @@ git push origin feature/your-amazing-feature
 ### Recognition:
 Contributors are recognized in our [CONTRIBUTORS.md](CONTRIBUTORS.md) file and project releases.
 
-## License
+## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for full details.
 
@@ -550,38 +595,3 @@ This project is for educational and research purposes. Financial predictions sho
 - Financial data providers for historical market information
 - Academic research community for volatility prediction methodologies
 
----
-
-**Project Status:** Production Ready
-
-*MLOps pipeline for financial volatility prediction*
-
-## Screenshots & Visual Documentation
-
-### Docker Infrastructure
-![Docker Services](docs/images/docker-services.png)
-*All containerized services running in Docker Desktop*
-
-### MLflow Experiment Tracking & Hyperopt
-![MLflow Experiments](docs/images/mlflow-experiments.png) ![MLflow Models](docs/images/mlflow-models.png)
-*Hyperparameter optimization trials and model registry*
-
-### Prefect Workflow Orchestration  
-![Prefect Flows](docs/images/prefect-flows.png) ![Prefect Tasks](docs/images/prefect-tasks.png)
-*Flow execution history and task dependencies*
-
-### Adminer Database UI with PostgreSQL
-![Adminer Interface](docs/images/adminer-ui.png) ![PostgreSQL Metrics](docs/images/postgres-metrics.png)
-*Database management and metrics storage*
-
-### Evidently ML Monitoring Reports
-![Evidently Dashboard](docs/images/evidently-dashboard.png) ![Data Drift Report](docs/images/data-drift.png)
-*Model performance monitoring and data drift detection*
-
-### Streamlit Web Service Visualization
-![Streamlit Dashboard](docs/images/streamlit-dashboard.png) ![Prediction Interface](docs/images/prediction-ui.png)
-*Web service visualization and prediction interface*
-
-### Grafana Monitoring & Alerts
-![Grafana Dashboard](docs/images/grafana-dashboard.png) ![Grafana Alerts](docs/images/grafana-alerts.png)
-*Performance metrics dashboards and automated alerting*
