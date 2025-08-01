@@ -159,14 +159,17 @@ graph TD
 
 ### Evidently ML Monitoring Reports
 <img src="docs/images/evidently1.png" width="25%">  <img src="docs/images/evidently2.png" width="25%">  <img src="docs/images/evidently3.png" width="25%">  <img src="docs/images/evidently4.png" width="25%">
+
 <em>Model performance monitoring and data drift detection</em>
 
 ### Streamlit Web Service Visualization
 <img src="docs/images/streamlit1.png" width="25%">  <img src="docs/images/streamlit2.png" width="25%">  <img src="docs/images/streamlit3.png" width="25%">  <img src="docs/images/streamlit4.png" width="25%">
+
 <em>Web service visualization and prediction interface</em>
 
 ### Grafana Monitoring & Alerts
 <img src="docs/images/grafana1.png" width="25%">  <img src="docs/images/grafana2.png" width="25%">
+
 <em>Performance metrics dashboards and automated alerting</em>
 
 
