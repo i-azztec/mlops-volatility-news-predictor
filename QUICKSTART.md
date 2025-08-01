@@ -1,85 +1,75 @@
-# Quick Start Guide
 
-## 🚀 Get Started in 5 Minutes
 
-### 1. Setup Environment
+## 🚀 Quick Start Guide
+
+### Prerequisites:
+- Docker Desktop (latest version) + Docker Compose
+- Python 3.9+ + pip
+- Git for cloning repository
+- 4GB RAM minimum for all services
+
+### Setup Instructions:
+
 ```bash
-# Clone and enter directory
+# 1. Clone repository
+git clone https://github.com/i-azztec/mlops-volatility-news-predictor.git
 cd mlops-volatility-news-predictor
 
-# Copy environment file
+# 2. Setup environment
 cp .env.example .env
+# Edit .env if needed (default values work for local development)
 
-# Install dependencies
-make setup
-```
+# 3. Install Python dependencies  
+pip install pipenv
+pipenv install --dev
 
-### 2. Start Infrastructure
-```bash
-# Start all services
+# 4. Start all infrastructure
 make up
+# Wait 2-3 minutes for all services to initialize
 
-# Check status
-make status
+# 5. Run complete MLOps pipeline
+make flows
+# This runs: preprocess → training → scoring → monitoring
 ```
 
-### 3. Run the Pipeline
-```bash
-# 1. Prepare data (run once)
-make preprocess-flow
+### Access Web Interfaces:
 
-# 2. Train model
-make training-flow
+| Service | URL | Credentials | Purpose |
+|---------|-----|-------------|---------|
+| **Prefect UI** | http://localhost:4200 | - | Workflow orchestration & monitoring |
+| **MLflow** | http://localhost:5000 | - | ML experiments & model registry |
+| **API Docs** | http://localhost:8000/docs | - | Interactive API documentation |
+| **Grafana** | http://localhost:3000 | admin/admin | Monitoring dashboards & alerts |
+| **Evidently** | http://localhost:8001 | - | ML monitoring reports |  
+| **Database** | http://localhost:8080 | user/password | PostgreSQL via Adminer |
+| **S3 (LocalStack)** | http://localhost:4566 | - | AWS S3 emulation via LocalStack |
 
-# 3. Promote model to Production
-# Go to http://localhost:5000 → Models → volatility-classifier
-# Select latest version → Transition to "Production"
-
-# 4. Run scoring
-make scoring-flow
-
-# 5. Run monitoring  
-make monitoring-flow
-```
-
-### 4. Access Dashboards
-- **MLflow UI:** http://localhost:5000
-- **Prefect UI:** http://localhost:4200  
-- **Grafana:** http://localhost:3000 (admin/admin)
-- **Database:** http://localhost:8080 (adminer)
-
-## 📊 What You'll See
-
-1. **MLflow**: Models, experiments, metrics tracking
-2. **Prefect**: Workflow runs and scheduling
-3. **Grafana**: Model performance monitoring
-4. **S3 (LocalStack)**: Data storage simulation
-
-## 🔧 Commands
+### Test the System:
 
 ```bash
-make help          # See all commands
-make test          # Run tests
-make lint          # Format code
-make logs          # View service logs
-make down          # Stop services
+# Test single prediction via API
+curl -X POST "http://localhost:8000/predict" \
+  -H "Content-Type: application/json" \
+  -d '{"headline": "Fed raises interest rates amid inflation concerns"}'
+
+# Check model registry
+open http://localhost:5000/#/models/volatility-classifier
+
+# View monitoring metrics  
+open http://localhost:3000/d/volatility-monitoring/volatility-model-monitoring
+
+# Run tests
+make test
 ```
 
-## 📁 Key Files
-
-- `src/` - ML logic (train, predict, preprocess)
-- `flows/` - Prefect workflows
-- `data/processed/` - Ready datasets (48k samples)
-- `tests/` - Unit & integration tests
-
-## 🎯 Expected Results
+## Expected Results
 
 - **Model Accuracy:** ~52-54% (realistic for volatility)
 - **Training Time:** ~2-5 minutes
 - **Daily Predictions:** Saved to S3
 - **Monitoring:** Weekly drift reports
 
-## ❓ Troubleshooting
+## Troubleshooting
 
 **Docker not found?**
 ```bash

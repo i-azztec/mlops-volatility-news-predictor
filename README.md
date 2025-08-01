@@ -8,13 +8,28 @@ This project implements a complete MLOps infrastructure for volatility predictio
 
 **Problem Statement:** Predict DJIA stock market volatility direction (increase/decrease) using financial news headlines to assist traders and financial analysts in risk assessment and decision making.
 
-**Solution:** Production-ready MLOps pipeline with:
-- Automated data processing and feature engineering workflows
-- Hyperparameter optimization and model versioning  
-- Dual prediction modes: batch processing and real-time web service
-- Comprehensive monitoring with drift detection and automated alerting
-- Containerized infrastructure with full observability
 
+**Solution:** This project implements an end-to-end MLOps pipeline for predicting stock market volatility. The solution is designed with a focus on automation, reproducibility, and monitoring, following modern DevOps and MLOps practices.
+
+*   **Infrastructure as Code (IaC):** The entire infrastructure, consisting of 7 services (MLflow, Prefect, etc.), is defined and orchestrated using Docker Compose. AWS S3 is emulated via LocalStack for local development and testing.
+
+*   **Experiment Tracking and Model Registry:** MLflow is utilized to track all hyperparameter optimization trials (conducted with Hyperopt) and to manage model versions. The best-performing models are registered and transitioned through `Staging` and `Production` stages.
+
+*   **Workflow Orchestration:** The project includes four distinct Prefect flows (`preprocess`, `training`, `scoring`, `monitoring`) that automate the entire ML lifecycle from data ingestion to performance analysis.
+
+*   **Model Deployment:** A dual deployment strategy is implemented:
+    *   **Batch Scoring:** A containerized Prefect flow performs daily batch predictions.
+    *   **Web Service:** A real-time prediction API is provided via a containerized FastAPI application.
+
+*   **Model Monitoring and Alerting:** A monitoring pipeline uses Evidently to generate reports on data drift and model performance. Key metrics (e.g., AUC, F1-score) are persisted to a PostgreSQL database and visualized in Grafana, which is configured with automated alerts for performance degradation.
+
+*   **Reproducibility and Best Practices:**
+    *   The project is fully containerized with **Docker** and dependencies are managed via **Pipfile**.
+    *   A **Makefile** provides standardized commands for setup, testing, and execution.
+    *   Code quality is enforced using **pre-commit hooks** with `black`, `isort`, and `pylint`.
+    *   The codebase includes both **unit and integration tests** (`pytest`).
+    *   A **CI/CD pipeline** is defined using **GitHub Actions** to automate testing and linting.
+  
 **Focus:** Production-ready MLOps practices, scalability, monitoring, and maintainability.
 
 ## 🏗️ Architecture
@@ -119,6 +134,43 @@ graph TD
 - **Load Balancing:** Stateless design for horizontal scaling
 - **Monitoring:** Production-grade alerting system
 
+
+## 📸 Screenshots & Visual Documentation
+
+### Docker Infrastructure
+<img src="docs/images/docker1.png" width="25%">
+
+<em>All containerized services running in Docker Desktop</em>
+
+### MLflow Experiment Tracking & Hyperopt
+<img src="docs/images/mlflow1.png" width="25%"> <img src="docs/images/mlflow2.png" width="25%"> <img src="docs/images/mlflow3.png" width="25%"> <img src="docs/images/mlflow4.png" width="25%">
+
+<em>Hyperparameter optimization trials and model registry</em>
+
+### Prefect Workflow Orchestration  
+<img src="docs/images/prefect1.png" width="25%">
+
+<em>Flow execution history and task dependencies</em>
+
+### Adminer Database UI with PostgreSQL
+<img src="docs/images/adminer1.png" width="25%">  <img src="docs/images/adminer2.png" width="25%">
+
+<em>Database management and metrics storage</em>
+
+### Evidently ML Monitoring Reports
+<img src="docs/images/evidently1.png" width="25%">  <img src="docs/images/evidently2.png" width="25%">  <img src="docs/images/evidently3.png" width="25%">  <img src="docs/images/evidently4.png" width="25%">
+<em>Model performance monitoring and data drift detection</em>
+
+### Streamlit Web Service Visualization
+<img src="docs/images/streamlit1.png" width="25%">  <img src="docs/images/streamlit2.png" width="25%">  <img src="docs/images/streamlit3.png" width="25%">  <img src="docs/images/streamlit4.png" width="25%">
+<em>Web service visualization and prediction interface</em>
+
+### Grafana Monitoring & Alerts
+<img src="docs/images/grafana1.png" width="25%">  <img src="docs/images/grafana2.png" width="25%">
+<em>Performance metrics dashboards and automated alerting</em>
+
+
+
 ## 📊 Data & Model Performance
 
 ### Dataset Details:
@@ -150,7 +202,6 @@ Combined Features → XGBoost Classifier → Hyperopt Optimization → MLflow Tr
 - **Prediction Aggregation:** 3 methods (mean probability, majority vote, max confidence)
 
 ### Key Characteristics:
-- **No data leakage:** Only historical features used
 - **Temporal validation:** Proper time-series splitting
 - **Realistic expectations:** Financial prediction inherently challenging
 - **Production-ready:** Robust to missing data and edge cases
@@ -171,67 +222,6 @@ Combined Features → XGBoost Classifier → Hyperopt Optimization → MLflow Tr
 - Batch prediction endpoint for multiple headlines with aggregation
 - Health monitoring and service status endpoints
 
-## 🚀 Quick Start
-
-### Prerequisites:
-- Docker Desktop (latest version) + Docker Compose
-- Python 3.9+ + pip
-- Git for cloning repository
-- 4GB RAM minimum for all services
-
-### Setup Instructions:
-
-```bash
-# 1. Clone repository
-git clone https://github.com/i-azztec/mlops-volatility-news-predictor.git
-cd mlops-volatility-news-predictor
-
-# 2. Setup environment
-cp .env.example .env
-# Edit .env if needed (default values work for local development)
-
-# 3. Install Python dependencies  
-pip install pipenv
-pipenv install --dev
-
-# 4. Start all infrastructure
-make up
-# Wait 2-3 minutes for all services to initialize
-
-# 5. Run complete MLOps pipeline
-make flows
-# This runs: preprocess → training → scoring → monitoring
-```
-
-### Access Web Interfaces:
-
-| Service | URL | Credentials | Purpose |
-|---------|-----|-------------|---------|
-| **Prefect UI** | http://localhost:4200 | - | Workflow orchestration & monitoring |
-| **MLflow** | http://localhost:5000 | - | ML experiments & model registry |
-| **API Docs** | http://localhost:8000/docs | - | Interactive API documentation |
-| **Grafana** | http://localhost:3000 | admin/admin | Monitoring dashboards & alerts |
-| **Evidently** | http://localhost:8001 | - | ML monitoring reports |  
-| **Database** | http://localhost:8080 | user/password | PostgreSQL via Adminer |
-| **S3 (LocalStack)** | http://localhost:4566 | - | AWS S3 emulation via LocalStack |
-
-### Test the System:
-
-```bash
-# Test single prediction via API
-curl -X POST "http://localhost:8000/predict" \
-  -H "Content-Type: application/json" \
-  -d '{"headline": "Fed raises interest rates amid inflation concerns"}'
-
-# Check model registry
-open http://localhost:5000/#/models/volatility-classifier
-
-# View monitoring metrics  
-open http://localhost:3000/d/volatility-monitoring/volatility-model-monitoring
-
-# Run tests
-make test
-```
 
 ## 📁 Project Structure
 
@@ -292,295 +282,45 @@ mlops-volatility-news-predictor/
 - **Documentation:** Detailed docstrings, README guides, and inline comments
 - **Configuration Management:** Environment variables, Docker configs, and modular settings
 
-## 🔄 Complete MLOps Workflow
+## 🔄 MLOps Workflow
 
 ### Data Pipeline:
-1. **Raw Data Processing:** Historical DJIA prices + news headlines (2008-2016)
-2. **Feature Engineering:** TF-IDF text features + volatility indicators + calendar features  
-3. **Data Validation:** Schema validation, missing value handling, temporal consistency
-4. **AWS S3 Storage:** Versioned data storage via LocalStack with proper folder structure
+Raw Data Processing → Feature Engineering (TF-IDF + volatility indicators) → Data Validation → AWS S3 Storage (LocalStack)
 
-### Model Development Pipeline:
-1. **Hyperparameter Optimization:** Hyperopt with 20-50 trials, objective: maximize AUC
-2. **Cross-Validation:** Time-aware train/validation split preserving temporal order
-3. **Model Registration:** Automatic MLflow registration with artifacts (model + vectorizer)
-4. **Model Promotion:** Manual staging workflow (Staging → Production)
+### Model Development:
+Hyperparameter Optimization (Hyperopt) → Cross-Validation → MLflow Registration → Manual Promotion (Staging → Production)
 
 ### Prediction Pipeline:
-1. **Daily Batch Scoring:** Automated scoring of test data with 3 aggregation methods
-2. **Real-time API Service:** FastAPI endpoints for single & batch predictions
-3. **Prediction Storage:** Results stored in S3 with metadata (model version, timestamp)
-4. **Multi-Method Ensemble:** Mean probability, majority vote, max confidence predictions
+Daily Batch Scoring → Real-time API Service → Prediction Storage (S3) → Multi-Method Ensemble
 
-### Monitoring & Alerting Pipeline:
-1. **Data Drift Detection:** Weekly Evidently reports comparing current vs reference data
-2. **Model Performance Tracking:** AUC, F1-score, accuracy trends over time  
-3. **Automated Alerting:** Grafana alerts for model degradation thresholds
-4. **Metrics Persistence:** PostgreSQL storage for historical trend analysis
+### Monitoring Pipeline:
+Data Drift Detection (Evidently) → Performance Tracking → Grafana Alerts → PostgreSQL Metrics
 
-### Operations & Maintenance:
-1. **Model Retraining:** Triggered by performance degradation alerts
-2. **A/B Testing Ready:** Infrastructure supports champion/challenger deployment
-3. **Rollback Capability:** Version control allows quick model rollback
-4. **Scalability:** Docker-based services ready for horizontal scaling
+## 📈 Monitoring & Alerts
 
-## 📈 Monitoring & Production Maintenance
+**Key Metrics:** Model Performance (AUC, F1-Score, Accuracy) | Data Drift | API latency & errors
 
-### Comprehensive Monitoring Stack:
-
-**Key Metrics Tracked:**
-- **Model Performance:** AUC-ROC, F1-Score, Accuracy, Precision, Recall
-- **Data Quality:** Missing values, schema validation, feature distributions
-- **Data Drift:** Distribution changes in input features (Evidently AI)
-- **Prediction Drift:** Output distribution changes over time
-- **Operational Metrics:** API latency, error rates, throughput, uptime
-
-**Production Alert Thresholds:**
+**Alert Thresholds:**
 ```yaml
-Critical Alerts:
-  - AUC-ROC < 0.52 → "Model performance critically degraded"
-  - API error rate > 5% → "Service reliability issues"
-  
-Warning Alerts:
-  - F1-Score < 0.65 → "Model quality declining"  
-  - Data drift share > 0.3 → "Input data distribution changed"
-  - Response time > 1000ms → "API performance degraded"
+Critical: AUC-ROC < 0.52, API error rate > 5%
+Warning: F1-Score < 0.65, Data drift > 0.3, Response time > 1000ms
 ```
 
-**Monitoring Interfaces:**
-1. **Grafana Dashboards:** Real-time metrics, historical trends, alert status
-2. **Evidently UI:** Interactive ML monitoring with drift analysis  
-3. **PostgreSQL Metrics:** Raw metrics storage for custom analysis
-4. **Prefect UI:** Workflow execution monitoring and failure tracking
+**Monitoring Tools:** Grafana Dashboards | Evidently UI | PostgreSQL Metrics | Prefect UI
 
-### Model Lifecycle Management:
+**Retraining Process:** Alert → Investigation → Decision (data/model/infrastructure) → Retrain if needed
 
-**Performance Degradation Response:**
-1. **Alert Triggered** → Grafana notification sent
-2. **Investigation** → Check Evidently reports for root cause
-3. **Decision Point:** 
-   - Data quality issue → Fix data pipeline
-   - Model drift → Trigger retraining workflow
-   - Infrastructure issue → Scale/restart services
-4. **Retraining Process:**
-   ```bash
-   # Trigger model retraining
-   python flows/training_flow.py
-   
-   # Evaluate new model performance  
-   # If better → Promote to Production via MLflow UI
-   # If worse → Keep current model, investigate further
-   ```
-
-**Continuous Improvement Process:**
-- **Weekly:** Automated monitoring reports generated
-- **Monthly:** Model performance review and threshold adjustment
-- **Quarterly:** Full pipeline and infrastructure review
-- **Ad-hoc:** Retrain on significant market events or data changes
-
-### Business Value Monitoring:
-
-**Key Business Metrics:**
-- **Prediction Accuracy:** Track real-world volatility vs predictions
-- **Financial Impact:** Measure trading strategy performance (if applicable)
-- **User Adoption:** API usage patterns and client feedback
-- **Operational Cost:** Infrastructure costs per prediction
-
-## 🧪 Testing & Quality Assurance
-
-### Comprehensive Test Suite:
+## 🧪 Testing & Quality
 
 ```bash
-# Run all tests with coverage
-make test
-
-# Test breakdown:
-pytest tests/unit/          # Unit tests (6 tests)
-pytest tests/integration/   # Integration tests (6 tests)  
-pytest webservice/         # API tests (included)
+make test    # Unit tests (6) + Integration tests (6) + API tests
+make lint    # black, isort, pylint + pre-commit hooks
 ```
 
-**Unit Tests Coverage:**
-- **Data Processing:** `test_preprocess.py` - transformation functions
-- **Basic Functionality:** `test_basic.py` - core module imports  
-- **Scoring Functions:** `test_scoring.py` - prediction pipeline components
-- **Model Training:** Local model training and evaluation
-- **Utility Functions:** S3 operations, data loading, error handling
-
-**Integration Tests Coverage:**
-- **Full Scoring Pipeline:** End-to-end test with LocalStack S3
-- **MLflow Integration:** Model registration and artifact management
-- **Database Connectivity:** PostgreSQL metrics storage
-- **API Endpoints:** FastAPI service with real model predictions
-- **Error Scenarios:** Network failures, missing data, invalid inputs
-
-### Code Quality Standards:
-
-```bash
-# Code formatting & linting
-make lint                   # black, isort, pylint
-
-# Pre-commit hooks (automatic)
-pre-commit install         # Runs on every git commit:
-  - black (code formatting)
-  - isort (import sorting) 
-  - pylint (static analysis)
-  - pytest (test execution)
-```
-
-**Quality Metrics:**
-- **Test Coverage:** >80% for core business logic
-- **Code Style:** PEP8 compliant with black formatting
-- **Static Analysis:** Pylint score >8.0/10
-- **Documentation:** Comprehensive docstrings for all public functions
-
-## 🛠️ Advanced Features & Future Extensions
-
-### Current Advanced Implementations:
-
-**Intelligent Model Management:**
-- **Multi-Model Support:** Infrastructure ready for A/B testing multiple models
-- **Dynamic Model Loading:** API can reload models without service restart  
-- **Performance-Based Selection:** Automatic model switching based on performance metrics
-- **Rollback Capabilities:** Quick reversion to previous model versions
-
-**Enhanced Monitoring:**
-- **Real-Time Drift Detection:** Continuous monitoring of input feature distributions
-- **Performance Degradation Alerts:** Automated notifications when model quality declines
-- **Business Impact Tracking:** Monitor prediction accuracy vs real market volatility
-- **Cost Optimization:** Track infrastructure costs per prediction
-
-### Production Deployment Scenarios:
-
-**Cloud Migration Path:**
-```bash
-# AWS Deployment Example:
-# 1. Replace LocalStack with real AWS S3
-# 2. Deploy to EKS with provided Kubernetes configs  
-# 3. Use RDS PostgreSQL for production database
-# 4. Implement AWS Lambda for serverless scoring
-```
-
-**Scaling Strategies:**
-- **Horizontal API Scaling:** Load balancer + multiple FastAPI instances
-- **Database Optimization:** Read replicas for monitoring queries
-- **Caching Layer:** Redis for frequent predictions and model artifacts
-- **Batch Processing:** Larger datasets with distributed computing (Spark/Dask)
-
-### Future Enhancement Roadmap:
-
-**Model Improvements:**
-- **Deep Learning Integration:** Transformer models for news sentiment analysis
-- **Multi-Asset Support:** Extend beyond DJIA to multiple market indices
-- **Real-Time Data Integration:** Live news feeds and market data streaming
-- **Ensemble Methods:** Combine multiple model predictions for better accuracy
-
-**Infrastructure Enhancements:**
-- **Kubernetes Native:** Full k8s deployment with Helm charts
-- **GitOps Workflow:** ArgoCD for automated deployment pipelines  
-- **Observability Stack:** Prometheus + Jaeger for comprehensive monitoring
-- **Security Hardening:** OAuth2, API rate limiting, data encryption
-
-**Business Features:**
-- **Multi-Tenant Support:** Separate workspaces for different clients
-- **Custom Model Training:** Client-specific model training capabilities
-- **Historical Analysis:** Backtesting tools for strategy evaluation
-- **Integration APIs:** Easy integration with trading platforms and tools
-
-
-
-## 📸 Screenshots & Visual Documentation
-
-### Docker Infrastructure
-<img src="docs/images/docker1.png" width="25%">
-<br><em>All containerized services running in Docker Desktop</em>
-
-### MLflow Experiment Tracking & Hyperopt
-<img src="docs/images/mlflow1.png" width="25%"> <img src="docs/images/mlflow2.png" width="25%"> <img src="docs/images/mlflow3.png" width="25%"> <img src="docs/images/mlflow4.png" width="25%">
-<br><em>Hyperparameter optimization trials and model registry</em>
-
-### Prefect Workflow Orchestration  
-<img src="docs/images/prefect1.png" width="25%">
-<br><em>Flow execution history and task dependencies</em>
-
-### Adminer Database UI with PostgreSQL
-<img src="docs/images/adminer1.png" width="25%">  <img src="docs/images/adminer2.png" width="25%">
-<br><em>Database management and metrics storage</em>
-
-### Evidently ML Monitoring Reports
-<img src="docs/images/evidently1.png" width="25%">  <img src="docs/images/evidently2.png" width="25%">  <img src="docs/images/evidently3.png" width="25%">  <img src="docs/images/evidently4.png" width="25%">
-<br><em>Model performance monitoring and data drift detection</em>
-
-### Streamlit Web Service Visualization
-<img src="docs/images/streamlit1.png" width="25%">  <img src="docs/images/streamlit2.png" width="25%">  <img src="docs/images/streamlit3.png" width="25%">  <img src="docs/images/streamlit4.png" width="25%">
-<br><em>Web service visualization and prediction interface</em>
-
-### Grafana Monitoring & Alerts
-<img src="docs/images/grafana1.png" width="25%">  <img src="docs/images/grafana2.png" width="25%">
-<br><em>Performance metrics dashboards and automated alerting</em>
-
-
-
-## 🤝 Contributing & Community
-
-### How to Contribute:
-
-```bash
-# 1. Development Setup
-git clone https://github.com/i-azztec/mlops-volatility-news-predictor.git
-cd mlops-volatility-news-predictor
-make setup
-
-# 2. Create Feature Branch
-git checkout -b feature/your-amazing-feature
-
-# 3. Development with Testing
-make test          # Run full test suite
-make lint          # Code quality checks  
-make flows         # Test complete pipeline
-
-# 4. Submit Contribution
-git commit -m "feat: add amazing feature"
-git push origin feature/your-amazing-feature
-# Create Pull Request with detailed description
-```
-
-### Contribution Areas:
-- **Testing:** Add more test cases, performance tests, chaos engineering
-- **Monitoring:** New dashboard widgets, alert rules, reporting features
-- **Models:** Alternative algorithms, feature engineering, ensemble methods
-- **Integration:** Cloud providers, third-party services, data sources
-- **Documentation:** Tutorials, best practices, troubleshooting guides
-
-### Recognition:
-Contributors are recognized in our [CONTRIBUTORS.md](CONTRIBUTORS.md) file and project releases.
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for full details.
-
-**Data Attribution:**
-- Dataset: [Daily News for Stock Market Prediction](https://www.kaggle.com/datasets/aaron7sun/stocknews) (Creative Commons)
-- Historical DJIA data obtained via yfinance (publicly available)
-
-**Disclaimer:**
-This project is for educational and research purposes. Financial predictions should not be used as sole basis for investment decisions. Always consult with financial professionals before making investment choices.
+**Test Coverage:** Data processing, model training, API endpoints, S3 operations, error scenarios
+**Quality Standards:** >80% test coverage, PEP8 compliance, Pylint >8.0/10
 
 ## Acknowledgments
-
-### Educational Foundation:
-- [MLOps Zoomcamp](https://github.com/DataTalksClub/mlops-zoomcamp) by DataTalks.Club - Comprehensive MLOps education
-- [Evidently AI](https://github.com/evidentlyai/evidently) - ML monitoring and observability tools
-- [Prefect](https://github.com/PrefectHQ/prefect) - Modern workflow orchestration platform
-
-### Technology Stack:
-- Open Source ML Community for XGBoost, scikit-learn, pandas ecosystems
-- FastAPI Team for high-performance API framework  
-- Docker & Cloud Native Computing Foundation for containerization standards
-- Grafana Labs for exceptional monitoring and visualization tools
-
-### Data & Research:
-- Kaggle Community for high-quality datasets and collaboration platform
-- Financial data providers for historical market information
-- Academic research community for volatility prediction methodologies
-
+- [MLOps Zoomcamp](https://github.com/DataTalksClub/mlops-zoomcamp) for the educational framework
+- [Kaggle Stock News Dataset](https://www.kaggle.com/datasets/aaron7sun/stocknews) for the data
+- Open source ML/MLOps community for excellent tools
