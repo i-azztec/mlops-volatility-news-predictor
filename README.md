@@ -199,9 +199,9 @@ Combined Features → XGBoost Classifier → Hyperopt Optimization → MLflow Tr
 ```
 
 ### Production Performance:
-- **Accuracy:** 71-78% (realistic for financial volatility prediction)
+- **Accuracy:** 71-78% 
 - **AUC-ROC:** 0.52-0.57 (expected for noisy financial data)
-- **F1-Score:** 64-78% (good precision-recall balance)
+- **F1-Score:** 64-78% 
 - **Prediction Aggregation:** 3 methods (mean probability, majority vote, max confidence)
 
 ### Key Characteristics:
