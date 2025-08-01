@@ -492,42 +492,31 @@ pre-commit install         # Runs on every git commit:
 ## 📸 Screenshots & Visual Documentation
 
 ### Docker Infrastructure
-![Docker Services](docs/images/docker1.png=250x)
+![Docker Services](docs/images/docker1.png){: width="25%"}
 *All containerized services running in Docker Desktop*
 
 ### MLflow Experiment Tracking & Hyperopt
-![MLflow Experiments](docs/images/mlflow1.png=250x) 
-![MLflow Models](docs/images/mlflow2.png=250x)
-![MLflow Models](docs/images/mlflow3.png=250x)
-![MLflow Models](docs/images/mlflow4.png=250x)
+![MLflow Experiments](docs/images/mlflow1.png){: width="25%"} ![MLflow Models](docs/images/mlflow2.png){: width="25%"}  ![MLflow Models](docs/images/mlflow3.png){: width="25%"}  ![MLflow Models](docs/images/mlflow4.png){: width="25%"}  
 *Hyperparameter optimization trials and model registry*
 
 ### Prefect Workflow Orchestration  
-![Prefect Flows](docs/images/prefect1.png=250x) 
+![Prefect Flows](docs/images/prefect1.png){: width="25%"}
 *Flow execution history and task dependencies*
 
 ### Adminer Database UI with PostgreSQL
-![Adminer Interface](docs/images/adminer1.png=250x) 
-![PostgreSQL Metrics](docs/images/adminer2.png=250x)
+![Adminer Interface](docs/images/adminer1.png){: width="25%"} ![PostgreSQL Metrics](docs/images/adminer2.png){: width="25%"}
 *Database management and metrics storage*
 
 ### Evidently ML Monitoring Reports
-![Evidently Dashboard](docs/images/evidently1.png=250x) 
-![Data Drift Report](docs/images/evidently2.png=250x)
-![Data Drift Report](docs/images/evidently3.png=250x)
-![Data Drift Report](docs/images/evidently4.png=250x)
+![Evidently Dashboard](docs/images/evidently1.png){: width="25%"} ![Data Drift Report](docs/images/evidently2.png){: width="25%"} ![Data Drift Report](docs/images/evidently3.png){: width="25%"} ![Data Drift Report](docs/images/evidently4.png){: width="25%"}
 *Model performance monitoring and data drift detection*
 
 ### Streamlit Web Service Visualization
-![Streamlit Dashboard](docs/images/streamlit1.png=250x) 
-![Prediction Interface](docs/images/streamlit2.png=250x)
-![Streamlit Dashboard](docs/images/streamlit3.png=250x) 
-![Streamlit Dashboard](docs/images/streamlit4.png=250x) 
+![Streamlit Dashboard](docs/images/streamlit1.png){: width="25%"} ![Prediction Interface](docs/images/streamlit2.png){: width="25%"}  ![Streamlit Dashboard](docs/images/streamlit3.png){: width="25%"} ![Streamlit Dashboard](docs/images/streamlit4.png){: width="25%"}
 *Web service visualization and prediction interface*
 
 ### Grafana Monitoring & Alerts
-![Grafana Dashboard](docs/images/grafana1.png=250x) 
-![Grafana Alerts](docs/images/grafana2.png=250x)
+![Grafana Dashboard](docs/images/grafana1.png){: width="25%"} ![Grafana Alerts](docs/images/grafana2.png){: width="25%"}
 *Performance metrics dashboards and automated alerting*
 
 
