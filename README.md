@@ -11,7 +11,7 @@ This project implements a complete MLOps infrastructure for volatility predictio
 
 **Solution:** This project implements an end-to-end MLOps pipeline for predicting stock market volatility. The solution is designed with a focus on automation, reproducibility, and monitoring, following modern DevOps and MLOps practices.
 
-*   **Infrastructure as Code (IaC):** The entire infrastructure, consisting of 7 services (MLflow, Prefect, etc.), is defined and orchestrated using Docker Compose. AWS S3 is emulated via LocalStack for local development and testing.
+*   **Infrastructure as Code (IaC) and Cloud Infrastructure:** The entire infrastructure, consisting of 7 services (MLflow, Prefect, etc.) with AWS S3 compatible storage (LocalStack), is defined and orchestrated using Docker Compose. 
 
 *   **Experiment Tracking and Model Registry:** MLflow is utilized to track all hyperparameter optimization trials (conducted with Hyperopt) and to manage model versions. The best-performing models are registered and transitioned through `Staging` and `Production` stages.
 
