@@ -263,8 +263,8 @@ mlops-volatility-news-predictor/
 │   ├── evidently_workspace/    # Evidently UI workspace
 │   └── alerting/               # Grafana alert rules & notifications
 ├── research/                    # Jupyter notebooks & analysis
-│   ├── volatility_prediction.ipynb  # Initial data exploration
-│   └── analysis.ipynb          # Model performance analysis
+│   ├── volatility_prediction.ipynb  # Model performance analysis
+│   └── analysis.ipynb          # Initial data exploration
 ├── .github/workflows/           # CI/CD pipelines
 │   ├── ci.yml                  # Testing & code quality checks
 │   └── deploy.yml              # Automated deployment (future)
